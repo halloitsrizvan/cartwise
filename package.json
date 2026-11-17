@@ -16,7 +16,8 @@
     "db:generate": "prisma generate",
     "db:push": "node node_modules/dotenv-cli/cli.js -e .env.local -- prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx --env-file=.env.local prisma/seed.ts",
+    "db:seed": "tsx --env-file=.env.local prisma/seed.ts && tsx --env-file=.env.local scripts/seed-demo-payments.ts",
+    "db:seed:payments": "tsx --env-file=.env.local scripts/seed-demo-payments.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
