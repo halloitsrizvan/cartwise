@@ -10,9 +10,12 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 30_000,
-            retry: (n, e) => !(e instanceof ApiClientError && e.status < 500) && n < 2,
+            staleTime: 20_000,
+            networkMode: "always", // offline-first: queryFns fall back to the IndexedDB cache themselves
+            refetchOnWindowFocus: false,
+            retry: (n, e) => (e instanceof ApiClientError ? e.status >= 500 && n < 1 : false),
           },
+          mutations: { networkMode: "always" },
         },
       }),
   );

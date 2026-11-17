@@ -125,7 +125,7 @@ async function seedVendor(v: VendorSeed, idx: number) {
       let recommended: number | null = null;
       if (gut) {
         // gut feel: noisy, biased high, sometimes far too low
-        bought = Math.max(step, Math.round((mean * (0.6 + rand() * 1.15)) / step) * step);
+        bought = Math.max(step, Math.round((mean * Math.exp(0.42 * gauss(rand))) / step) * step);
       } else {
         const p = planItem({
           item: { id: it.id, buyPrice: it.buyPrice, sellPrice: it.sellPrice, unitStep: step, categorySlug: it.categorySlug },
