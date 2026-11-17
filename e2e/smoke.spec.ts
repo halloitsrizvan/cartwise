@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const phone = `80000${String(Date.now()).slice(-5)}`;
+const email = `smoke-${Date.now()}@test.cartwise.app`;
 
 function trackConsole(page: Page) {
   const errors: string[] = [];
@@ -28,8 +28,8 @@ test("core loop: register -> onboard -> sell -> close day -> plan -> share passp
 
   // register + onboarding
   await page.goto("/register");
-  await page.getByLabel(/mobile number|മൊബൈൽ/i).fill(phone);
-  await page.getByLabel(/PIN|പിൻ/).fill("4321");
+  await page.getByLabel(/^(Email|ഇമെയിൽ)/).fill(email);
+  await page.getByLabel(/^(Password|പാസ്‌വേഡ്)/).fill("Smoke-Pass-2026");
   await page.getByRole("button", { name: /^(Register|രജിസ്റ്റർ)$/ }).click();
   await expect(page).toHaveURL(/\/onboarding/, { timeout: 40_000 });
   await page.getByTestId("onb-next").click(); // language
@@ -73,7 +73,7 @@ test("core loop: register -> onboard -> sell -> close day -> plan -> share passp
   await pub.goto(new URL(url).pathname);
   await expect(pub.getByTestId("statement")).toBeVisible({ timeout: 30_000 });
   await expect(pub.getByTestId("statement")).toContainText("Smoke");
-  await expect(pub.getByTestId("statement")).not.toContainText(phone);
+  await expect(pub.getByTestId("statement")).not.toContainText(email);
   await anon.close();
 
   expect(errors).toEqual([]);
