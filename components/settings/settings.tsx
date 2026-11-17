@@ -58,12 +58,17 @@ function ItemRow({ item }: { item: ItemDTO }) {
   const qc = useQueryClient();
   const [buy, setBuy] = useState(String(item.buy_price));
   const [sell, setSell] = useState(String(item.sell_price));
-  const dirty = Number(buy) !== item.buy_price || Number(sell) !== item.sell_price;
+  const shown = lang === "ml" ? item.name_ml : item.name_en;
+  const [nm, setNm] = useState(shown);
+  const dirty = Number(buy) !== item.buy_price || Number(sell) !== item.sell_price || nm.trim() !== shown;
   const save = async () => {
     const b = Number(buy);
     const s = Number(sell);
     if (!(b >= 0) || !(s > 0)) return toast.error(t("err.PRICE_INVALID"));
-    await patch(`/api/v1/items/${item.id}`, { buy_price: b, sell_price: s });
+    const n = nm.trim();
+    if (!n) return toast.error(t("err.REQUIRED"));
+    const names = n === shown ? {} : item.category_slug === "other" ? { name_ml: n, name_en: n } : lang === "ml" ? { name_ml: n } : { name_en: n };
+    await patch(`/api/v1/items/${item.id}`, { buy_price: b, sell_price: s, ...names });
     toast(t("settings.saved"));
     qc.invalidateQueries({ queryKey: ["items"] });
     qc.invalidateQueries({ queryKey: ["today"] });
@@ -77,7 +82,7 @@ function ItemRow({ item }: { item: ItemDTO }) {
     <li className="card space-y-3 p-4">
       <div className="flex items-center gap-3">
         <ItemEmoji emoji={item.emoji} name={item.name_en} className="text-4xl" />
-        <p className="flex-1 text-xl font-bold">{lang === "ml" ? item.name_ml : item.name_en}</p>
+        <Input aria-label={t("onb.item_name")} className="flex-1 !min-h-12 text-lg font-bold" value={nm} maxLength={60} onChange={(e) => setNm(e.target.value)} />
         <button type="button" onClick={hide} aria-label={`${t("settings.hide_item")}: ${item.name_en}`} className="btn-press tap-target grid place-items-center rounded-full hover:bg-surface-2"><EyeOff className="size-6" aria-hidden /></button>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -122,6 +127,38 @@ function PublicListing() {
           <Button className="w-full" onClick={() => save({ public_phone: ph || null, public_place: pl.trim() || null })}>{t("common.save")}</Button>
         </>
       )}
+    </Card>
+  );
+}
+
+function UpiCard() {
+  const { t } = useI18n();
+  const vendor = useVendor();
+  const qc = useQueryClient();
+  const [val, setVal] = useState<string | null>(null);
+  const [err, setErr] = useState("");
+  if (!vendor.data) return null;
+  const cur = val ?? vendor.data.upi_id ?? "";
+  const save = async () => {
+    setErr("");
+    const v = cur.trim();
+    if (v && !/^[A-Za-z0-9._-]{2,64}@[A-Za-z][A-Za-z0-9.-]{1,40}$/.test(v)) return setErr(t("err.UPI_INVALID"));
+    try {
+      await patch("/api/v1/vendors/me", { upi_id: v || null });
+      toast(t("settings.saved"));
+      qc.invalidateQueries({ queryKey: ["vendor"] });
+    } catch {
+      setErr(t("common.error_body"));
+    }
+  };
+  return (
+    <Card className="space-y-3">
+      <h2 className="text-xl">{t("settings.upi_title")}</h2>
+      <p className="text-muted">{t("settings.upi_hint")}</p>
+      <Field label={t("sell.upi_id")} htmlFor="upi" error={err}>
+        <Input id="upi" value={cur} onChange={(e) => setVal(e.target.value.trim())} placeholder={t("sell.upi_example")} autoCapitalize="none" autoCorrect="off" inputMode="email" />
+      </Field>
+      <Button className="w-full" onClick={save}>{t("common.save")}</Button>
     </Card>
   );
 }
@@ -172,6 +209,8 @@ export function SettingsScreen() {
         <h2 className="text-xl">{t("settings.size")}</h2>
         <Segmented<SizePref> label={t("settings.size")} value={size} onChange={setSize} options={[{ v: "normal", label: t("settings.size_normal") }, { v: "large", label: t("settings.size_large") }, { v: "xl", label: t("settings.size_xl") }]} />
       </Card>
+
+      <UpiCard />
 
       <PublicListing />
 

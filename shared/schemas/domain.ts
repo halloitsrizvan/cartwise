@@ -77,6 +77,7 @@ export const VendorPatchSchema = z.strictObject({
   public_listed: z.boolean().optional(),
   public_phone: z.string().trim().regex(/^[0-9]{10}$/, "PHONE_INVALID").nullish(),
   public_place: z.string().trim().max(120).nullish(),
+  upi_id: z.string().trim().regex(/^[A-Za-z0-9._-]{2,64}@[A-Za-z][A-Za-z0-9.-]{1,40}$/, "UPI_INVALID").nullish(),
 });
 export const PublicVendorsQuery = z.object({
   area: z.string().trim().max(80).optional(),

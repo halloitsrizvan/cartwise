@@ -27,14 +27,14 @@ export const vendorRepository = {
 
   patch: (
     vendorId: string,
-    data: { name?: string; language?: "ml" | "en"; area?: string; public_listed?: boolean; public_phone?: string | null; public_place?: string | null },
+    data: { name?: string; language?: "ml" | "en"; area?: string; public_listed?: boolean; public_phone?: string | null; public_place?: string | null; upi_id?: string | null },
   ) =>
     prisma.$transaction(async (tx) => {
       const { name, language, area } = data;
       if (name !== undefined || language !== undefined || area !== undefined) await tx.profile.update({ where: { id: vendorId }, data: { name, language, area } });
       await tx.vendor.update({
         where: { profileId: vendorId },
-        data: { area, publicListed: data.public_listed, publicPhone: data.public_phone, publicPlace: data.public_place },
+        data: { area, publicListed: data.public_listed, publicPhone: data.public_phone, publicPlace: data.public_place, upiId: data.upi_id },
       });
     }),
 

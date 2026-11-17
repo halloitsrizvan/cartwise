@@ -12,7 +12,7 @@ const ROWS = [
 export function PhoneMock({ className = "" }: { className?: string }) {
   const { lang, t } = useI18n();
   return (
-    <div className={`relative w-[15.5rem] rounded-[2.4rem] border-[7px] border-deep bg-bg p-3 shadow-[0_30px_60px_-20px_rgba(3,39,36,0.45)] ${className}`} aria-hidden>
+    <div className={`relative w-56 rounded-[2.2rem] sm:w-[15.5rem] sm:rounded-[2.4rem] border-[7px] border-deep bg-bg p-3 shadow-[0_30px_60px_-20px_rgba(3,39,36,0.45)] ${className}`} aria-hidden>
       <div className="mx-auto mb-3 h-5 w-20 rounded-full bg-deep" />
       <p className="text-[0.7rem] font-semibold text-muted">{t("plan.hint")}</p>
       <p className="mb-2 text-lg font-extrabold leading-tight">{t("plan.title", { day: t("wd.3") })}</p>

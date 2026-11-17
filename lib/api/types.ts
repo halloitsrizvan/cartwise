@@ -1,7 +1,7 @@
 import type { ItemDTO, PlanLine } from "@/shared/schemas/domain";
 
 export type Me = { id: string; role: "vendor" | "admin"; name: string; language: "ml" | "en"; onboarded: boolean; approved?: boolean; demo: boolean };
-export type VendorMe = { id: string; name: string; phone: string | null; language: "ml" | "en"; area: string; stall_type: "fruit" | "vegetable" | "tea_snacks" | "juice"; onboarded: boolean; demo: boolean; public_listed: boolean; public_phone: string | null; public_place: string | null };
+export type VendorMe = { id: string; name: string; phone: string | null; language: "ml" | "en"; area: string; stall_type: "fruit" | "vegetable" | "tea_snacks" | "juice"; onboarded: boolean; demo: boolean; public_listed: boolean; public_phone: string | null; public_place: string | null; upi_id: string | null };
 export type DaySummary = { revenue: number; waste_value: number; missed_sales_estimate: number; profit: number; waste_pct: number; purchase_cost: number };
 export type TodayItem = ItemDTO & { sold_qty: number };
 export type Today = {

@@ -45,7 +45,7 @@ export function BestVendors() {
   return (
     <section className="mt-12">
       <div className="mb-4 flex items-end justify-between gap-3">
-        <h2 className="text-3xl">{t("landing.best_title")}</h2>
+        <h2 className="text-2xl sm:text-3xl">{t("landing.best_title")}</h2>
         <Link href="/vendors" className="font-semibold text-primary underline">{t("landing.best_more")}</Link>
       </div>
       {q.isPending ? <ListSkeleton rows={3} h="h-24" /> : q.isError ? <ErrorState onRetry={() => q.refetch()} /> : !q.data.length ? <EmptyState title={t("vendors.empty")} body={t("vendors.empty_body")} /> : (
@@ -67,7 +67,7 @@ export function VendorsDirectory() {
     <div className="flex min-h-dvh flex-col">
       <TopBar />
       <main id="main" className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 pt-6">
-        <h1 className="text-4xl">{t("vendors.title")}</h1>
+        <h1 className="text-3xl sm:text-4xl">{t("vendors.title")}</h1>
         <p className="mb-5 mt-1 text-lg text-muted">{t("vendors.sub")}</p>
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
           <label className="relative block">

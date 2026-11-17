@@ -15,7 +15,7 @@ import { CoinsIllustration, ListIllustration, PhoneMock, TabletMock } from "./mo
 
 function Logo({ light }: { light?: boolean }) {
   return (
-    <Link href="/" className={`inline-flex items-center gap-2 font-heading text-2xl font-extrabold ${light ? "text-on-deep" : "text-primary"}`} aria-label={APP_NAME}>
+    <Link href="/" className={`inline-flex items-center gap-2 font-heading text-xl font-extrabold sm:text-2xl ${light ? "text-on-deep" : "text-primary"}`} aria-label={APP_NAME}>
       <span className="grid size-9 place-items-center rounded-xl bg-primary text-lg text-on-primary" aria-hidden>C</span>
       {APP_NAME}
     </Link>
@@ -35,8 +35,8 @@ function EmailCta({ id }: { id: string }) {
       className="flex w-full max-w-xl flex-col gap-3 sm:flex-row"
     >
       <label htmlFor={id} className="sr-only">{t("auth.email")}</label>
-      <input id={id} type="email" inputMode="email" autoComplete="email" placeholder={t("landing.email_placeholder")} value={email} onChange={(e) => setEmail(e.target.value)} className="min-h-16 flex-1 rounded-2xl border-[length:var(--bw)] border-line bg-surface px-5 text-lg shadow-sm outline-none focus:border-primary" />
-      <button type="submit" className="btn-press inline-flex min-h-16 items-center justify-center gap-2 rounded-2xl bg-primary px-8 text-lg font-bold text-on-primary hover:brightness-110">
+      <input id={id} type="email" inputMode="email" autoComplete="email" placeholder={t("landing.email_placeholder")} value={email} onChange={(e) => setEmail(e.target.value)} className="min-h-14 min-w-0 flex-1 rounded-2xl sm:min-h-16 border-[length:var(--bw)] border-line bg-surface px-5 text-lg shadow-sm outline-none focus:border-primary" />
+      <button type="submit" className="btn-press inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-primary px-6 sm:min-h-16 sm:px-8 text-lg font-bold text-on-primary hover:brightness-110">
         {t("landing.get_started")} <ArrowRight className="size-5" aria-hidden />
       </button>
     </form>
@@ -51,7 +51,7 @@ export function Landing() {
     <div className="flex min-h-dvh flex-col bg-bg">
       {/* ---------- Header ---------- */}
       <header className="absolute inset-x-0 top-0 z-20">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 md:px-8">
+        <div className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4 sm:py-4 md:px-8">
           <Logo />
           <nav aria-label={t("nav.main")} className="ml-8 hidden gap-6 font-semibold md:flex">
             <a href="#features" className="hover:text-primary">{t("landing.nav_features")}</a>
@@ -67,19 +67,19 @@ export function Landing() {
 
       <main id="main" className="flex-1">
         {/* ---------- Hero ---------- */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-primary-soft via-primary-soft/50 to-bg pb-10 pt-28 md:pt-32">
+        <section className="relative overflow-hidden bg-gradient-to-b from-primary-soft via-primary-soft/50 to-bg pb-8 pt-24 md:pt-32">
           <div aria-hidden className="pointer-events-none absolute -right-24 top-10 size-[28rem] rounded-full bg-primary/10 blur-3xl" />
           <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 md:px-8 lg:grid-cols-[1.05fr_1fr]">
             <div className="space-y-6">
               <span className="inline-flex items-center gap-2 rounded-full bg-surface px-4 py-1.5 text-sm font-bold text-primary shadow-sm"><BadgeCheck className="size-4" aria-hidden /> {t("landing.eyebrow")}</span>
-              <h1 className="text-5xl leading-[1.08] md:text-7xl">
+              <h1 className="text-[2.1rem] leading-[1.15] sm:text-5xl md:text-7xl">
                 {t("landing.h1_a")}<br />
                 <span className="relative inline-block text-primary">
                   {t("landing.h1_b")}
                   <svg aria-hidden viewBox="0 0 300 14" className="absolute -bottom-2 left-0 h-3 w-full" preserveAspectRatio="none"><path d="M3 9c60-8 140-8 294-2" stroke="var(--accent)" strokeWidth="6" strokeLinecap="round" fill="none" /></svg>
                 </span>
               </h1>
-              <p className="max-w-xl text-xl text-muted">{t("landing.sub")}</p>
+              <p className="max-w-xl text-lg text-muted sm:text-xl">{t("landing.sub")}</p>
               <EmailCta id="hero-email" />
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-base font-semibold text-muted">
                 {["landing.pt1", "landing.pt2", "landing.pt3"].map((k) => (
@@ -88,7 +88,7 @@ export function Landing() {
               </div>
             </div>
 
-            <div className="relative mx-auto h-[28rem] w-full max-w-xl md:h-[32rem]">
+            <div className="relative mx-auto h-[25rem] w-full max-w-xl sm:h-[28rem] md:h-[32rem]">
               <TabletMock className="absolute right-0 top-4 hidden sm:block" />
               <PhoneMock className="absolute bottom-0 left-1/2 -translate-x-1/2 sm:left-4 sm:translate-x-0" />
               <div className="absolute -left-2 top-6 hidden rounded-2xl bg-surface p-3 shadow-lg sm:block" aria-hidden>
@@ -113,13 +113,13 @@ export function Landing() {
         {/* ---------- Features ---------- */}
         <section id="features" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-16 md:px-8">
           <p className="text-center text-sm font-extrabold uppercase tracking-widest text-primary">{t("landing.feat_eyebrow")}</p>
-          <h2 className="mx-auto mt-2 max-w-3xl text-center text-4xl md:text-5xl">{t("landing.feat_title")}</h2>
+          <h2 className="mx-auto mt-2 max-w-3xl text-center text-3xl sm:text-4xl md:text-5xl">{t("landing.feat_title")}</h2>
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             {[
               { title: "landing.fc1_title", sub: "landing.fc1_sub", pts: ["landing.fc1_p1", "landing.fc1_p2"], art: <ListIllustration /> },
               { title: "landing.fc2_title", sub: "landing.fc2_sub", pts: ["landing.fc2_p1", "landing.fc2_p2"], art: <CoinsIllustration /> },
             ].map((c) => (
-              <article key={c.title} className="flex flex-col overflow-hidden rounded-[32px] bg-surface-2 p-8">
+              <article key={c.title} className="flex flex-col overflow-hidden rounded-[28px] bg-surface-2 p-6 sm:rounded-[32px] sm:p-8">
                 <h3 className="text-2xl">{t(c.title)}</h3>
                 <p className="mt-1 text-muted">{t(c.sub)}</p>
                 <ul className="mt-4 space-y-2">
@@ -132,7 +132,7 @@ export function Landing() {
             ))}
           </div>
 
-          <div className="card mt-6 grid gap-6 p-8 md:grid-cols-3">
+          <div className="card mt-6 grid gap-6 p-6 sm:p-8 md:grid-cols-3">
             {[
               { i: Mic, a: "landing.m1_title", b: "landing.m1_body" },
               { i: WifiOff, a: "landing.m2_title", b: "landing.m2_body" },
@@ -148,13 +148,13 @@ export function Landing() {
 
         {/* ---------- Highlight banner ---------- */}
         <section className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="relative overflow-hidden rounded-[36px] bg-deep p-8 text-on-deep md:p-12">
+          <div className="relative overflow-hidden rounded-[28px] bg-deep p-6 pt-10 text-on-deep sm:rounded-[36px] sm:p-8 md:p-12">
             <span className="absolute left-8 top-0 -translate-y-1/2 rounded-xl bg-accent px-4 py-2 text-sm font-extrabold text-on-accent">{t("landing.banner_tag")}</span>
             <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-4">
                 <FileCheck2 className="size-10 text-accent" aria-hidden />
-                <h2 className="text-4xl md:text-5xl">{t("landing.banner_title")}</h2>
-                <p className="max-w-xl text-xl opacity-85">{t("landing.banner_body")}</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl">{t("landing.banner_title")}</h2>
+                <p className="max-w-xl text-lg opacity-85 sm:text-xl">{t("landing.banner_body")}</p>
                 <ButtonLink href="/register" size="md" variant="accent">{t("landing.banner_cta")}</ButtonLink>
               </div>
               <ul className="space-y-3 rounded-[28px] bg-primary p-6 text-on-primary">
@@ -168,7 +168,7 @@ export function Landing() {
 
         {/* ---------- How it works ---------- */}
         <section id="how" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-16 md:px-8">
-          <h2 className="mb-8 text-center text-4xl md:text-5xl">{t("landing.how_title")}</h2>
+          <h2 className="mb-8 text-center text-3xl sm:text-4xl md:text-5xl">{t("landing.how_title")}</h2>
           <ol className="grid gap-5 md:grid-cols-3">
             {["landing.s1", "landing.s2", "landing.s3"].map((k, i) => (
               <li key={k} className="card flex flex-col gap-4 p-6">
@@ -193,10 +193,10 @@ export function Landing() {
 
         {/* ---------- Final CTA ---------- */}
         <section className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
-          <div className="relative overflow-hidden rounded-[36px] bg-primary-soft p-8 md:p-12">
+          <div className="relative overflow-hidden rounded-[28px] bg-primary-soft p-6 sm:rounded-[36px] sm:p-8 md:p-12">
             <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-6">
-                <h2 className="text-4xl md:text-5xl">{t("landing.cta_title", { app: APP_NAME })}</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl">{t("landing.cta_title", { app: APP_NAME })}</h2>
                 <EmailCta id="cta-email" />
                 <p className="text-muted">{t("landing.cta_note")}</p>
               </div>
@@ -236,7 +236,7 @@ export function Landing() {
             </ul>
           </nav>
         </div>
-        <div className="border-t-[length:var(--bw)] border-line py-4 text-center text-sm text-muted">© {new Date().getFullYear()} {APP_NAME}</div>
+        <div className="border-t-[length:var(--bw)] border-line py-4 text-center text-sm text-muted">© {APP_NAME}</div>
       </footer>
     </div>
   );

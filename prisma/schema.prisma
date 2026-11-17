@@ -73,6 +73,7 @@ model Vendor {
   publicListed Boolean @default(false) @map("public_listed")
   publicPhone  String?  @map("public_phone")
   publicPlace  String?  @map("public_place")
+  upiId        String?  @map("upi_id")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 

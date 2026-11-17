@@ -128,6 +128,11 @@ html[data-theme="sunlight"][data-size="xl"] {
   font-size: 23px;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip; /* no horizontal scroll at 360px */
+}
 body {
   background: var(--bg);
   color: var(--ink);

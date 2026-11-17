@@ -1,60 +1,48 @@
 "use client";
 import { LocateFixed } from "lucide-react";
 import { useState } from "react";
+import { api } from "@/lib/api/client";
 import { useT } from "@/lib/i18n";
 import { KERALA_AREAS } from "@/shared/catalog";
 import { Button, Field, Input } from "./ui";
 
-type Addr = { city?: string; town?: string; village?: string; county?: string; state_district?: string };
-
-/** Pick the district/city name and snap it to a known Kerala area when possible. */
-export function pickArea(a: Addr): string {
-  const raw = [a.state_district, a.county, a.city, a.town, a.village]
-    .filter(Boolean)
-    .map((s) => s!.replace(/\s+(district|taluk|corporation)$/i, "").trim());
-  const alias = (s: string) => (/^cochin$/i.test(s) ? "Kochi" : /^trivandrum$/i.test(s) ? "Thiruvananthapuram" : /^calicut$/i.test(s) ? "Kozhikode" : s);
-  for (const r of raw.map(alias)) {
-    const hit = KERALA_AREAS.find((k) => k.toLowerCase() === r.toLowerCase());
-    if (hit) return hit;
-  }
-  return alias(raw[0] ?? "");
-}
-
 /**
- * Area input with a "use my location" button. Coordinates are rounded to ~1 km and used only for one
- * reverse-geocode request (OpenStreetMap Nominatim); nothing is stored except the resulting area text.
+ * Area input with a "use my location" button. The browser gives coordinates; the server reverse-geocodes them
+ * (rounded to ~100 m, nothing stored) and returns district / city / locality suggestions to pick from.
  */
 export function AreaField({ id, value, onChange, error, showChips }: { id: string; value: string; onChange: (v: string) => void; error?: string; showChips?: boolean }) {
   const t = useT();
   const [state, setState] = useState<"idle" | "busy">("idle");
   const [msg, setMsg] = useState("");
+  const [found, setFound] = useState<string[]>([]);
+
+  const lookup = async (lat: number, lon: number) => {
+    try {
+      const r = await api<{ area: string; suggestions: string[] }>(`/api/v1/geo/reverse?lat=${lat}&lon=${lon}`);
+      onChange(r.area);
+      setFound(r.suggestions);
+    } catch {
+      setMsg(t("area.failed"));
+    }
+    setState("idle");
+  };
 
   const locate = () => {
     setMsg("");
+    setFound([]);
     if (!("geolocation" in navigator)) return setMsg(t("area.unsupported"));
+    if (!window.isSecureContext) return setMsg(t("area.insecure"));
     setState("busy");
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const lat = pos.coords.latitude.toFixed(2);
-          const lon = pos.coords.longitude.toFixed(2);
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&accept-language=en&lat=${lat}&lon=${lon}`);
-          if (!res.ok) throw new Error("geocode");
-          const json = (await res.json()) as { address?: Addr };
-          const area = pickArea(json.address ?? {});
-          if (!area) throw new Error("empty");
-          onChange(area);
-        } catch {
-          setMsg(t("area.failed"));
-        }
-        setState("idle");
-      },
-      (err) => {
-        setMsg(err.code === err.PERMISSION_DENIED ? t("area.denied") : t("area.failed"));
-        setState("idle");
-      },
-      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 600_000 },
-    );
+    const fail = (err: GeolocationPositionError) => {
+      setMsg(err.code === err.PERMISSION_DENIED ? t("area.denied") : err.code === err.TIMEOUT ? t("area.timeout") : t("area.failed"));
+      setState("idle");
+    };
+    const ok = (pos: GeolocationPosition) => void lookup(pos.coords.latitude, pos.coords.longitude);
+    // try a precise fix first; if it times out, accept a coarse (network) fix
+    navigator.geolocation.getCurrentPosition(ok, (err) => {
+      if (err.code === err.PERMISSION_DENIED) return fail(err);
+      navigator.geolocation.getCurrentPosition(ok, fail, { enableHighAccuracy: false, timeout: 15_000, maximumAge: 600_000 });
+    }, { enableHighAccuracy: true, timeout: 8_000, maximumAge: 60_000 });
   };
 
   return (
@@ -69,6 +57,18 @@ export function AreaField({ id, value, onChange, error, showChips }: { id: strin
         <p role="alert" className="font-medium text-danger">
           {msg}
         </p>
+      )}
+      {found.length > 1 && (
+        <div>
+          <p className="mb-2 text-sm font-semibold text-muted">{t("area.pick")}</p>
+          <div className="flex flex-wrap gap-2">
+            {found.map((a) => (
+              <button key={a} type="button" onClick={() => onChange(a)} aria-pressed={value === a} className={`btn-press min-h-11 rounded-full border-[length:var(--bw)] border-line px-4 font-semibold ${value === a ? "bg-primary text-on-primary" : "bg-surface"}`}>
+                {a}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
       {showChips && (
         <div className="flex flex-wrap gap-2">

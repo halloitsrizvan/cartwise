@@ -19,6 +19,7 @@ export const vendorService = {
       public_listed: v.publicListed,
       public_phone: v.publicPhone,
       public_place: v.publicPlace,
+      upi_id: v.upiId,
       demo: process.env.DEMO_MODE === "true" && isDemoPhone(v.profile.phone),
     };
   },

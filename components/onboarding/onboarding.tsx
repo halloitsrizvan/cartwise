@@ -38,6 +38,9 @@ export function Onboarding() {
     if (stall) setItems(catalogFor(stall));
   }, [stall]);
 
+  /** Custom items keep one name in both languages; catalog items edit the language being shown. */
+  const setItemName = (i: number, v: string) =>
+    setItems((xs) => xs.map((x, j) => (j !== i ? x : x.category_slug === "other" ? { ...x, name_ml: v, name_en: v } : lang === "ml" ? { ...x, name_ml: v } : { ...x, name_en: v })));
   const setPrice = (i: number, k: "buy_price" | "sell_price", v: string) =>
     setItems((xs) => xs.map((x, j) => (j === i ? { ...x, [k]: Math.max(0, Number(v.replace(/[^0-9.]/g, "")) || 0) } : x)));
 
@@ -47,7 +50,7 @@ export function Onboarding() {
     setBusy(true);
     setErr("");
     try {
-      await api("/api/v1/vendors/onboard", { method: "POST", body: { name: name.trim(), language: lang, stall_type: stall, area: area.trim(), items } });
+      await api("/api/v1/vendors/onboard", { method: "POST", body: { name: name.trim(), language: lang, stall_type: stall, area: area.trim(), items: items.map((x) => ({ ...x, name_ml: x.name_ml.trim(), name_en: x.name_en.trim() })) } });
       await qc.invalidateQueries({ queryKey: ["me"] });
       router.replace("/app");
     } catch {
@@ -56,7 +59,7 @@ export function Onboarding() {
     }
   };
 
-  const canNext = step === 0 || (step === 1 && !!stall) || (step === 2 && items.length > 0 && items.every((i) => i.sell_price > 0));
+  const canNext = step === 0 || (step === 1 && !!stall) || (step === 2 && items.length > 0 && items.every((i) => i.sell_price > 0 && i.name_ml.trim() && i.name_en.trim()));
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -108,7 +111,7 @@ export function Onboarding() {
                     <li key={i} className="card p-3">
                       <div className="flex items-center gap-3">
                         <ItemEmoji emoji={it.emoji} name={it.name_en} className="text-4xl" />
-                        <p className="flex-1 text-lg font-bold">{lang === "ml" ? it.name_ml : it.name_en}</p>
+                        <Input aria-label={t("onb.item_name")} className="flex-1 !min-h-12 text-lg font-bold" value={lang === "ml" ? it.name_ml : it.name_en} maxLength={60} onChange={(e) => setItemName(i, e.target.value)} data-testid={`item-name-${i}`} />
                         <button type="button" aria-label={`${t("common.remove")} ${it.name_en}`} onClick={() => setItems((xs) => xs.filter((_, j) => j !== i))} className="btn-press tap-target grid place-items-center rounded-full hover:bg-surface-2">
                           <X className="size-6" aria-hidden />
                         </button>
