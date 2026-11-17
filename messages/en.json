@@ -514,5 +514,17 @@
   "landing.banner_cta_user": "Open my income proof",
   "area.found": "Found: {place}",
   "area.accuracy": "Accuracy about {n} m",
-  "area.approx": "This location is only approximate (within {n}). Turn on GPS or pick the correct area below."
+  "area.approx": "This location is only approximate (within {n}). Turn on GPS or pick the correct area below.",
+  "voice.assistant": "Voice assistant",
+  "voice.start": "Start recording",
+  "voice.stop": "Stop recording",
+  "voice.tap_and_say": "Tap the mic and say what you sold",
+  "voice.try_saying": "Try saying",
+  "voice.understanding": "Understanding...",
+  "voice.added": "Added to your bill",
+  "voice.no_match": "I heard you, but found no product. Try again.",
+  "voice.offline": "Voice needs the internet. Tap the products instead.",
+  "voice.unavailable": "Voice is not available right now. Tap the products instead.",
+  "voice.mic_denied": "Microphone permission was denied. Allow it in the browser settings.",
+  "voice.too_short": "That was too short. Tap the mic and speak."
 }

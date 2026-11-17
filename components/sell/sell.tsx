@@ -7,7 +7,7 @@ import { BottomSheet } from "@/components/cw/sheet";
 import { Button, ButtonLink, EmptyState, ErrorState, ListSkeleton, PageTitle } from "@/components/cw/ui";
 import { ItemEmoji, Stepper } from "@/components/cw/widgets";
 import { PaySheet } from "@/components/sell/pay-sheet";
-import { getSR, VoiceSheet } from "@/components/sell/voice-sheet";
+import { canRecord, VoiceAssistant } from "@/components/sell/voice-assistant";
 import type { TodayItem } from "@/lib/api/types";
 import { fmtQty, haptic, rupee } from "@/lib/format";
 import { useI18n } from "@/lib/i18n";
@@ -56,7 +56,7 @@ export function SellScreen() {
   const [payOpen, setPayOpen] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [canVoice, setCanVoice] = useState(false);
-  useEffect(() => setCanVoice(!!getSR()), []);
+  useEffect(() => setCanVoice(canRecord()), []);
 
   const nameOf = (i: TodayItem) => (lang === "ml" ? i.name_ml : i.name_en);
   const byId = useMemo(() => new Map(live.items.map((i) => [i.id, i])), [live.items]);
@@ -184,17 +184,26 @@ export function SellScreen() {
         onUpiSaved={() => qc.invalidateQueries({ queryKey: ["vendor"] })}
       />
 
-      <VoiceSheet
+      <VoiceAssistant
         open={voiceOpen}
         onClose={() => setVoiceOpen(false)}
         items={live.items}
-        onConfirm={(hits) => {
+        onAdd={(hits) =>
           setBill((b) => {
             const next = { ...b };
             for (const h of hits) next[h.item_id] = Math.round(((next[h.item_id] ?? 0) + h.qty) * 1000) / 1000;
             return next;
-          });
-        }}
+          })
+        }
+        onRemove={(h) =>
+          setBill((b) => {
+            const next = { ...b };
+            const left = Math.round(((next[h.item_id] ?? 0) - h.qty) * 1000) / 1000;
+            if (left > 0) next[h.item_id] = left;
+            else delete next[h.item_id];
+            return next;
+          })
+        }
       />
     </div>
   );
