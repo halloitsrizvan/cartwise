@@ -76,3 +76,18 @@ API and concurrency tests use the real database in `.env.local` and clean up the
 
 - Seed: fruit vendor has 32 days (so the readiness checklist can be fully ticked), others 28. First days are "gut feel", the last 14 follow the plan.
 - Registration assist is a **simulated** process; nothing is sent to any government system. The readiness list is indicative, not official eligibility.
+
+## Deploy to Vercel
+
+Config is ready in [vercel.json](vercel.json) (region `hnd1`, next to the Supabase pooler in ap-northeast-1; 30 s API timeout; `sw.js` never cached).
+
+1. Push the repo to GitHub and **Import** it in Vercel (framework: Next.js, auto-detected).
+2. Project Settings -> Environment Variables (Production + Preview), same names as `.env.example`:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (mark sensitive)
+   - `DATABASE_URL` (pooled, `?pgbouncer=true&connection_limit=1`), `DIRECT_URL`
+   - `APP_URL` and `NEXT_PUBLIC_APP_URL` = the production URL, e.g. `https://<project>.vercel.app`
+   - `DEMO_MODE=true`
+3. The database is already migrated and seeded if you use the same Supabase project. For a fresh one, run locally against it: `npm run db:deploy && npm run db:seed`.
+4. Deploy. Check `https://<project>.vercel.app/api/health` returns `"db":"up"`, then use the Demo login buttons.
+
+Or with the CLI: `npx vercel link`, `npx vercel env add <NAME> production` for each variable, `npx vercel --prod`.
