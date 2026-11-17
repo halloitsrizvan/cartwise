@@ -83,3 +83,23 @@ export function beforeAfter(days: DayPoint[]): {
   }
   return { mode: "none", before: stats(gut), after: stats(followed) };
 }
+
+/**
+ * Close the day from selling data alone: bought = the plan quantity (or what was sold, if more),
+ * leftover = bought - sold, sold out = sold at least the planned quantity, cost = bought x buy price.
+ * Used by both the server (auto close) and the client (instant summary), so they always agree.
+ */
+export function deriveClose(rows: { itemId: string; sold: number; planned: number | null; buyPrice: number }[]) {
+  let cost = 0;
+  const items = rows.map((r) => {
+    const bought = r.planned === null ? r.sold : Math.max(r.planned, r.sold);
+    cost += bought * r.buyPrice;
+    return {
+      item_id: r.itemId,
+      bought_qty: Math.round(bought * 1000) / 1000,
+      leftover_qty: Math.round((bought - r.sold) * 1000) / 1000,
+      sold_out: r.planned !== null && r.planned > 0 && r.sold >= r.planned,
+    };
+  });
+  return { items, purchase_cost: Math.round(cost) };
+}

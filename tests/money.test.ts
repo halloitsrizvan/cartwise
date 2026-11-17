@@ -52,3 +52,26 @@ describe("beforeAfter", () => {
     expect(beforeAfter([day(0, false, 0.1, 1)]).mode).toBe("none");
   });
 });
+
+import { deriveClose } from "@/server/services/money";
+
+describe("deriveClose", () => {
+  it("bought = plan qty, leftover = bought - sold, sold out when sold >= plan", () => {
+    const r = deriveClose([
+      { itemId: "a", sold: 8, planned: 10, buyPrice: 60 },
+      { itemId: "b", sold: 5, planned: 5, buyPrice: 40 },
+    ]);
+    expect(r.items[0]).toEqual({ item_id: "a", bought_qty: 10, leftover_qty: 2, sold_out: false });
+    expect(r.items[1]).toEqual({ item_id: "b", bought_qty: 5, leftover_qty: 0, sold_out: true });
+    expect(r.purchase_cost).toBe(10 * 60 + 5 * 40);
+  });
+  it("sold more than planned: bought = sold, sold out", () => {
+    const r = deriveClose([{ itemId: "a", sold: 12, planned: 10, buyPrice: 10 }]);
+    expect(r.items[0]).toMatchObject({ bought_qty: 12, leftover_qty: 0, sold_out: true });
+  });
+  it("no plan: bought = sold, no leftover, never sold out", () => {
+    const r = deriveClose([{ itemId: "a", sold: 4, planned: null, buyPrice: 10 }]);
+    expect(r.items[0]).toMatchObject({ bought_qty: 4, leftover_qty: 0, sold_out: false });
+    expect(r.purchase_cost).toBe(40);
+  });
+});

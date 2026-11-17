@@ -189,7 +189,7 @@ export function PlanScreen({ day = "tomorrow" }: { day?: "tomorrow" | "today" })
         })}
       </ul>
 
-      <div className="fixed inset-x-0 bottom-[4.6rem] z-20 px-3" style={{ marginBottom: "env(safe-area-inset-bottom)" }}>
+      <div className="dock-bar" style={{ marginBottom: "env(safe-area-inset-bottom)" }}>
         <div className="card mx-auto max-w-2xl px-5 py-3 text-center text-lg font-bold" data-testid="plan-total">
           {t("plan.spend_profit", { spend: spend.toLocaleString("en-IN"), profit: profit.toLocaleString("en-IN") })}
         </div>

@@ -118,6 +118,8 @@ export const CloseDaySchema = z.strictObject({
   purchase_cost: z.number().min(0).max(10000000),
 });
 export type CloseDayInput = z.infer<typeof CloseDaySchema>;
+/** Empty body = derive everything from the day's sales. */
+export const CloseDayBodySchema = z.union([CloseDaySchema, z.strictObject({})]);
 export const OverrideSchema = z.strictObject({ item_id: z.uuid(), chosen_qty: z.number().min(0).max(100000) });
 export const RangeQuery = z.object({ range: z.enum(["7", "30"]).default("7") });
 

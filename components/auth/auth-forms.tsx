@@ -1,5 +1,5 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -36,6 +36,7 @@ function useFieldErrors() {
 export function useAuthSubmit() {
   const t = useT();
   const router = useRouter();
+  const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const run = async (path: string, body: unknown) => {
@@ -43,6 +44,7 @@ export function useAuthSubmit() {
     setFormError("");
     try {
       const r = await api<AuthResult>(path, { method: "POST", body });
+      await qc.invalidateQueries({ queryKey: ["me"] });
       goHome(r, router);
     } catch (e) {
       const code = e instanceof ApiClientError ? e.code : "INTERNAL";

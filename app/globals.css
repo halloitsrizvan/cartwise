@@ -282,3 +282,19 @@ html[data-theme="sunlight"] :focus-visible {
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+/* Bars pinned above the mobile tab bar; on desktop they sit to the right of the left sidebar */
+.dock-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 4.6rem;
+  z-index: 20;
+  padding: 0 0.75rem;
+}
+@media (min-width: 768px) {
+  .dock-bar {
+    left: 16rem;
+    bottom: 1rem;
+  }
+}

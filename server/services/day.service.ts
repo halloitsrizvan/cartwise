@@ -1,14 +1,14 @@
 import { createHash } from "node:crypto";
 import type { CloseDayInput } from "@/shared/schemas/domain";
 import { FOLLOWED_TOLERANCE } from "../config/constants";
-import { addDays, todayIST } from "../lib/dates";
+import { addDays, fromDbDate, toDbDate, todayIST } from "../lib/dates";
 import { AppError } from "../lib/errors";
 import { prisma } from "../lib/prisma";
 import { dayRepository } from "../repositories/day.repository";
 import { planRepository } from "../repositories/plan.repository";
 import { vendorRepository } from "../repositories/vendor.repository";
 import { itemDTO } from "./dto";
-import { dayMetrics } from "./money";
+import { dayMetrics, deriveClose } from "./money";
 import { generateForDate, getOrGenerate } from "./plan.service";
 
 const stable = (v: unknown): string =>
@@ -38,7 +38,19 @@ function summarise(
 }
 
 export const dayService = {
+  /** Earlier days that still have sales but were never closed are closed automatically (derived numbers). */
+  async autoClosePast(vendorId: string) {
+    const today = todayIST();
+    const open = await prisma.dayLog.findMany({
+      where: { vendorId, status: "open", date: { lt: toDbDate(today), gte: toDbDate(addDays(today, -7)) }, sales: { some: { voided: false } } },
+      select: { date: true },
+      orderBy: { date: "asc" },
+    });
+    for (const d of open) await this.close(vendorId, undefined, fromDbDate(d.date)).catch((e) => console.error("[autoClose]", e));
+  },
+
   async today(vendorId: string) {
+    await this.autoClosePast(vendorId);
     const date = todayIST();
     const day = await dayRepository.ensureDay(vendorId, date);
     const items = await vendorRepository.listItems(vendorId);
@@ -96,10 +108,14 @@ export const dayService = {
    * One transaction. Locks the day_log row (FOR UPDATE) so parallel requests serialise:
    * the first writes, the rest see status=closed and return 200 (same payload) or 409 (different payload).
    */
-  async close(vendorId: string, input: CloseDayInput) {
-    const today = todayIST();
+  /**
+   * Close a day. Without `input` the numbers are derived from the sales (see deriveClose).
+   * `forDate` lets the auto-close job close an earlier day.
+   */
+  async close(vendorId: string, input?: CloseDayInput, forDate?: string) {
+    const today = forDate ?? todayIST();
     const tomorrow = addDays(today, 1);
-    const payloadHash = hashPayload(input);
+    const payloadHash = input ? hashPayload(input) : "derived";
     const day0 = await dayRepository.ensureDay(vendorId, today); // outside tx: race-safe create
 
     return prisma.$transaction(
@@ -115,8 +131,16 @@ export const dayService = {
 
         const items = await tx.item.findMany({ where: { vendorId } });
         const owned = new Set(items.map((i) => i.id));
-        if (input.items.some((i) => !owned.has(i.item_id))) throw AppError.notFound("Item not found");
         const sold = await dayRepository.soldByItem(day.id, tx);
+        const dayPlan = await planRepository.find(vendorId, today, tx);
+        if (!input) {
+          const ov = ((dayPlan?.overrides ?? {}) as Record<string, number>);
+          const rec = new Map(((dayPlan?.lines ?? []) as unknown as { item_id: string; recommended: number }[]).map((l) => [l.item_id, l.recommended]));
+          input = {
+            ...deriveClose(items.filter((i) => i.active || (sold[i.id] ?? 0) > 0).map((i) => ({ itemId: i.id, sold: sold[i.id] ?? 0, planned: dayPlan ? (ov[i.id] ?? rec.get(i.id) ?? null) : null, buyPrice: i.buyPrice }))),
+          };
+        }
+        if (input.items.some((i) => !owned.has(i.item_id))) throw AppError.notFound("Item not found");
         const given = new Map(input.items.map((i) => [i.item_id, i]));
 
         const rows = items
@@ -158,7 +182,7 @@ export const dayService = {
           where: { id: day.id },
           data: { status: "closed", purchaseCost: input.purchase_cost, closedAt: new Date(), closePayload: payloadHash },
         });
-        await generateForDate(vendorId, tomorrow, { resetOverrides: true, db: tx });
+        if (today === todayIST()) await generateForDate(vendorId, tomorrow, { resetOverrides: true, db: tx });
         return { idempotent: false, summary: summarise(closed, rows) };
       },
       { timeout: 25_000, maxWait: 15_000 },

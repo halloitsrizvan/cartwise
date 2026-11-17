@@ -48,10 +48,10 @@ test("core loop: register -> onboard -> sell -> close day -> plan -> share passp
   for (let i = 0; i < 3; i++) await tile.click();
   await expect(page.getByTestId("qty-mango")).toHaveText("1.5");
 
-  // close day
-  await page.goto("/app/close");
-  await expect(page.getByTestId("close-card")).toBeVisible({ timeout: 30_000 });
-  for (let i = 0; i < 6; i++) await page.getByTestId("close-next").click();
+  // close day: one tap on Today (derived from sales)
+  await page.goto("/app");
+  await page.getByTestId("close-day-cta").click();
+  await expect(page.getByTestId("close-summary")).toBeVisible({ timeout: 30_000 });
   await page.getByTestId("close-submit").click();
   await expect(page.getByTestId("see-plan")).toBeVisible();
   await page.getByTestId("see-plan").click();

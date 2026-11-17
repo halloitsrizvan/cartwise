@@ -1,6 +1,6 @@
 "use client";
 import { useQueryClient } from "@tanstack/react-query";
-import { CloudOff, CloudUpload, Home, Languages, LogOut, MoreHorizontal, ShoppingBasket, Wallet, ClipboardList, FileText, LayoutDashboard } from "lucide-react";
+import { Bell, Settings, ShieldCheck, UserRound, CloudOff, CloudUpload, Home, Languages, LogOut, MoreHorizontal, ShoppingBasket, Wallet, ClipboardList, FileText, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
@@ -11,7 +11,7 @@ import { post } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
 import { onOpApplied, onSyncFailure, onSynced, startSync, useSyncState } from "@/lib/offline/queue";
 import { cn } from "@/lib/utils";
-import { Chip, ListSkeleton } from "./ui";
+import { ButtonLink, Chip, ListSkeleton } from "./ui";
 
 export function LangToggle() {
   const { lang, setLang, t } = useI18n();
@@ -60,7 +60,26 @@ export function DemoBadge() {
   return <Chip tone="accent">{t("common.demo_data")}</Chip>;
 }
 
-export function TopBar({ right }: { right?: ReactNode }) {
+/** Profile button when signed in, Log in button otherwise. For public pages. */
+export function AccountButton() {
+  const { t } = useI18n();
+  const me = useMe();
+  if (me.isPending) return <span className="inline-block h-11 w-24" aria-hidden />;
+  const user = me.data;
+  if (!user) {
+    return <ButtonLink href="/login" size="sm" variant="outline">{t("auth.login")}</ButtonLink>;
+  }
+  const href = user.role === "admin" ? "/admin" : user.onboarded ? "/app" : "/onboarding";
+  const initial = (user.name || "").trim().charAt(0).toUpperCase();
+  return (
+    <Link href={href} aria-label={`${t("common.profile")}: ${user.name ?? ""}`} data-testid="profile-btn" className="btn-press inline-flex min-h-11 items-center gap-2 rounded-full bg-primary py-1 pl-1 pr-4 font-semibold text-on-primary">
+      <span className="grid size-9 place-items-center rounded-full bg-on-primary/20" aria-hidden>{initial || <UserRound className="size-5" />}</span>
+      <span className="max-w-[8rem] truncate">{user.name?.trim().split(" ")[0] || t("common.profile")}</span>
+    </Link>
+  );
+}
+
+export function TopBar({ right, account }: { right?: ReactNode; account?: boolean }) {
   const { t } = useI18n();
   return (
     <header className="sticky top-0 z-30 border-b-[length:var(--bw)] border-line bg-bg/95 backdrop-blur">
@@ -69,8 +88,8 @@ export function TopBar({ right }: { right?: ReactNode }) {
           {APP_NAME}
         </Link>
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <OfflineBadge />
           <LangToggle />
+          {account && <AccountButton />}
           {right}
         </div>
       </div>
@@ -123,21 +142,52 @@ const TABS = [
   { href: "/app/more", key: "nav.more", icon: MoreHorizontal },
 ] as const;
 
+const SIDE_LINKS = [
+  { href: "/app", key: "nav.today", icon: Home, exact: true },
+  { href: "/app/sell", key: "nav.sell", icon: ShoppingBasket },
+  { href: "/app/plan", key: "nav.plan", icon: ClipboardList },
+  { href: "/app/money", key: "nav.money", icon: Wallet },
+  { href: "/app/passport", key: "more.passport", icon: ShieldCheck },
+  { href: "/app/notices", key: "more.notices", icon: Bell },
+  { href: "/app/settings", key: "more.settings", icon: Settings },
+] as const;
+
 export function VendorShell({ children }: { children: ReactNode }) {
   const me = useRoleGuard("vendor");
   const path = usePathname();
   const { t } = useI18n();
   const ready = me.data?.role === "vendor" && me.data.onboarded;
+  const isActive = (href: string, exact?: boolean) => (exact ? path === href : path === href || path.startsWith(href + "/"));
   return (
     <div className="flex min-h-dvh flex-col">
       <TopBar />
-      <main id="main" className="mx-auto w-full max-w-2xl flex-1 px-4 pb-32 pt-4">
-        {ready || me.isError ? children : <ListSkeleton rows={3} />}
-      </main>
-      <nav aria-label={t("nav.main")} className="fixed inset-x-0 bottom-0 z-30 border-t-[length:var(--bw)] border-line bg-surface/95 backdrop-blur" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+      <div className="flex flex-1">
+        {/* desktop: navigation lives in a left panel */}
+        <aside className="no-print sticky top-[3.6rem] hidden h-[calc(100dvh-3.6rem)] w-64 shrink-0 overflow-y-auto border-r-[length:var(--bw)] border-line bg-surface p-4 md:block">
+          <nav aria-label={t("nav.main")}>
+            <ul className="space-y-1.5">
+              {SIDE_LINKS.map((l) => {
+                const active = isActive(l.href, "exact" in l ? l.exact : false);
+                return (
+                  <li key={l.href}>
+                    <Link href={l.href} aria-current={active ? "page" : undefined} className={cn("btn-press flex min-h-12 items-center gap-3 rounded-2xl px-4 text-lg font-semibold", active ? "bg-primary text-on-primary" : "hover:bg-surface-2")}>
+                      <l.icon className="size-6 shrink-0" aria-hidden />
+                      {t(l.key)}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </aside>
+        <main id="main" className="mx-auto w-full max-w-2xl min-w-0 flex-1 px-4 pb-32 pt-4 md:pb-12">
+          {ready || me.isError ? children : <ListSkeleton rows={3} />}
+        </main>
+      </div>
+      <nav aria-label={t("nav.main")} className="fixed inset-x-0 bottom-0 z-30 border-t-[length:var(--bw)] border-line bg-surface/95 backdrop-blur md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <ul className="mx-auto grid max-w-2xl grid-cols-5">
           {TABS.map((tab) => {
-            const active = "exact" in tab && tab.exact ? path === tab.href : path === tab.href || path.startsWith(tab.href + "/");
+            const active = isActive(tab.href, "exact" in tab ? tab.exact : false);
             const Icon = tab.icon;
             return (
               <li key={tab.href}>
@@ -169,8 +219,10 @@ export function SideShell({ role, children }: { role: "admin"; children: ReactNo
   const router = useRouter();
   const { t } = useI18n();
   const nav = ADMIN_NAV;
+  const qc = useQueryClient();
   const logout = async () => {
     await post("/api/v1/auth/logout").catch(() => {});
+    qc.clear();
     router.replace("/login");
   };
   return (

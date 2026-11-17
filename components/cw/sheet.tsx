@@ -3,9 +3,11 @@ import { X } from "lucide-react";
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useT } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { Button } from "./ui";
 
-export function BottomSheet({ open, onClose, title, children, footer }: { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode }) {
+/** `dock`: compact panel glued to the very bottom edge on every screen size (used for quick pickers). */
+export function BottomSheet({ open, onClose, title, children, footer, dock }: { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode; dock?: boolean }) {
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -39,19 +41,19 @@ export function BottomSheet({ open, onClose, title, children, footer }: { open: 
   }, [open, onClose]);
   if (!open || typeof document === "undefined") return null;
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div className={cn("fixed inset-0 z-50 flex items-end justify-center", !dock && "sm:items-center")}>
       <div className="fade-in absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
       <div
         ref={ref}
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="sheet-in relative max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-[32px] bg-surface p-5 pb-8 text-ink shadow-2xl sm:rounded-[32px]"
-        style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom))" }}
+        className={cn("sheet-in relative max-h-[92dvh] w-full overflow-y-auto bg-surface text-ink shadow-2xl", dock ? "max-w-2xl rounded-t-[28px] p-4 pb-5" : "max-w-lg rounded-t-[32px] p-5 pb-8 sm:rounded-[32px]")}
+        style={{ paddingBottom: dock ? "max(1.25rem, env(safe-area-inset-bottom))" : "max(2rem, env(safe-area-inset-bottom))" }}
       >
         <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-line sm:hidden" aria-hidden />
         <div className="mb-3 flex items-start justify-between gap-3">
-          <h2 className="text-2xl">{title}</h2>
+          <h2 className={dock ? "text-xl" : "text-2xl"}>{title}</h2>
           <button type="button" onClick={onClose} aria-label={t("common.close")} className="btn-press tap-target -mr-2 -mt-2 grid place-items-center rounded-full hover:bg-surface-2">
             <X className="size-6" aria-hidden />
           </button>

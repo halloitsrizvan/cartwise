@@ -53,7 +53,7 @@ reg("get", "/api/v1/day/today", "Day", V, "Today's log, items with sold qty, tot
 reg("patch", "/api/v1/day/context", "Day", V, "Set rain / festival / payday (?for=tomorrow regenerates the plan)", { body: S.ContextSchema, query: S.ForQuery });
 reg("post", "/api/v1/day/sales", "Day", V, "Batch sale events. IDEMPOTENT on client_id (offline sync endpoint)", { body: S.SalesBatchSchema });
 reg("delete", "/api/v1/day/sales/{id}", "Day", V, "Undo (void) a sale; id may be the event id or client_id");
-reg("post", "/api/v1/day/close", "Day", V, "Close the day in one transaction (row lock). Same payload twice = 200, different payload = 409", { body: S.CloseDaySchema });
+reg("post", "/api/v1/day/close", "Day", V, "Close the day in one transaction (row lock). Empty body = numbers derived from the sales (bought = plan qty, leftover = bought - sold). Same payload twice = 200, different payload = 409", { body: S.CloseDayBodySchema });
 
 reg("get", "/api/v1/plan/tomorrow", "Plan", V, "Tomorrow's buy plan (generated if missing)");
 reg("get", "/api/v1/plan/today", "Plan", V, "Today's plan");

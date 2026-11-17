@@ -101,7 +101,7 @@ export function MoneyScreen() {
       ) : m.isError || !m.data ? (
         <ErrorState onRetry={() => m.refetch()} />
       ) : m.data.days.length === 0 ? (
-        <EmptyState title={t("money.empty")} body={t("money.empty_body")} action={<ButtonLink href="/app/close">{t("today.close_day")}</ButtonLink>} />
+        <EmptyState title={t("money.empty")} body={t("money.empty_body")} action={<ButtonLink href="/app/sell">{t("today.sell_now")}</ButtonLink>} />
       ) : (
         <>
           <Card>

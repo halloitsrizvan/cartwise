@@ -467,5 +467,7 @@
   "sell.upi_example": "name@bank",
   "err.UPI_INVALID": "Enter a valid UPI ID, like name@bank",
   "settings.upi_title": "UPI for payments",
-  "settings.upi_hint": "Customers pay you directly. The QR on the Sell screen uses this ID. This app never touches the money."
+  "settings.upi_hint": "Customers pay you directly. The QR on the Sell screen uses this ID. This app never touches the money.",
+  "common.profile": "Profile",
+  "close.auto_hint": "Worked out from today's sales and your plan. Nothing to type."
 }

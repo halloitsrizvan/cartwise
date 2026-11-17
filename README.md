@@ -44,7 +44,7 @@ shared/schemas  (Zod, used by server + client + OpenAPI)      shared/voice.ts (v
 ```
 
 - **Auth**: Supabase Auth, email + password for every role (vendor, admin); role in `app_metadata`. Admin accounts are created by seed only. One guard `requireRole()` in [server/lib/auth.ts](server/lib/auth.ts); ownership ids always come from the session.
-- **Offline**: Sell and Close write to an IndexedDB queue first (optimistic), sync on reconnect with retry; sales are idempotent on `client_id`; close-day is idempotent (same payload 200, different 409) and runs in one transaction with `SELECT ... FOR UPDATE`.
+- **Offline**: Sell and the one-tap Close (numbers derived from the day's sales and the plan) write to an IndexedDB queue first (optimistic), sync on reconnect with retry; sales are idempotent on `client_id`; close-day is idempotent (same payload 200, different 409) and runs in one transaction with `SELECT ... FOR UPDATE`.
 - **Forecast**: newsvendor on the last 8 closed days. Constants in [server/config/constants.ts](server/config/constants.ts).
 - **Rate limits** are Postgres-backed (`rate_limits`): login, public passport, share creation.
 

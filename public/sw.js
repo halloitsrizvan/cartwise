@@ -1,6 +1,6 @@
 /* CartWise service worker: app-shell caching so Sell / Close open with no network. */
 const VERSION = "cw-v1";
-const SHELL = ["/", "/app", "/app/sell", "/app/close", "/app/plan", "/login"];
+const SHELL = ["/", "/app", "/app/sell", "/app/plan", "/login"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => Promise.allSettled(SHELL.map((u) => c.add(u)))).then(() => self.skipWaiting()));

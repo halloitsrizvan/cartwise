@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DemoRow } from "@/components/auth/auth-forms";
-import { LangToggle } from "@/components/cw/shell";
+import { AccountButton, LangToggle } from "@/components/cw/shell";
 import { ButtonLink } from "@/components/cw/ui";
 import { BestVendors } from "@/components/public/vendors";
 import { APP_NAME } from "@/config/brand";
@@ -60,7 +60,7 @@ export function Landing() {
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <LangToggle />
-            <ButtonLink href="/login" size="sm" variant="outline">{t("auth.login")}</ButtonLink>
+            <AccountButton />
           </div>
         </div>
       </header>

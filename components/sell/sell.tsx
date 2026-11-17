@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils";
 
 type Bill = Record<string, number>; // item id -> qty
 
-const quickQty = (it: TodayItem) => (it.unit_step < 1 ? [0.5, 1, 2, 5] : [1, 2, 5, 10]);
-
 function Tile({ item, inBill, onPick, disabled }: { item: TodayItem; inBill: number; onPick: () => void; disabled?: boolean }) {
   const { lang, t } = useI18n();
   const name = lang === "ml" ? item.name_ml : item.name_en;
@@ -117,7 +115,7 @@ export function SellScreen() {
 
       {/* bill bar */}
       {count > 0 && !live.closed && (
-        <div className="fixed inset-x-0 bottom-[4.6rem] z-20 px-3" style={{ marginBottom: "env(safe-area-inset-bottom)" }}>
+        <div className="dock-bar" style={{ marginBottom: "env(safe-area-inset-bottom)" }}>
           <div className="card mx-auto flex max-w-2xl items-center gap-3 !bg-deep p-3 !text-on-deep" data-testid="bill-bar">
             <ShoppingBag className="ml-2 size-7 shrink-0" aria-hidden />
             <div className="min-w-0 flex-1">
@@ -132,13 +130,14 @@ export function SellScreen() {
       )}
 
       {canVoice && !live.closed && (
-        <button type="button" onClick={() => setVoiceOpen(true)} aria-label={t("sell.mic")} data-testid="mic-fab" className={cn("btn-press fixed right-4 z-30 grid size-16 place-items-center rounded-full bg-accent text-on-accent shadow-xl", count > 0 ? "bottom-48" : "bottom-28")}>
+        <button type="button" onClick={() => setVoiceOpen(true)} aria-label={t("sell.mic")} data-testid="mic-fab" className={cn("btn-press fixed right-4 z-30 grid size-16 place-items-center rounded-full bg-accent text-on-accent shadow-xl", count > 0 ? "bottom-48 md:bottom-28" : "bottom-28 md:bottom-8")}>
           <Mic className="size-8" aria-hidden />
         </button>
       )}
 
       {/* quantity popup */}
       <BottomSheet
+        dock
         open={!!pick}
         onClose={() => setPick(null)}
         title={pick ? t("sell.qty_for", { name: nameOf(pick) }) : ""}
@@ -158,21 +157,14 @@ export function SellScreen() {
         }
       >
         {pick && (
-          <div className="space-y-5">
+          <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <ItemEmoji emoji={pick.emoji} name={pick.name_en} className="text-6xl" />
+              <ItemEmoji emoji={pick.emoji} name={pick.name_en} className="text-5xl" />
               <p className="num text-lg text-muted">
                 {rupee(pick.sell_price)} / {t(`unit.${pick.unit}`)}
               </p>
             </div>
-            <div className="grid grid-cols-4 gap-2" role="group" aria-label={t("sell.qty_sheet")}>
-              {quickQty(pick).map((n) => (
-                <button key={n} type="button" onClick={() => { haptic(); setQty(n); }} aria-pressed={qty === n} className={cn("btn-press num min-h-14 rounded-2xl border-[length:var(--bw)] border-line text-xl font-bold", qty === n ? "bg-primary text-on-primary" : "bg-surface")}>
-                  {fmtQty(n)}
-                </button>
-              ))}
-            </div>
-            <Stepper value={qty} onChange={setQty} step={pick.unit_step} min={pick.unit_step} label={nameOf(pick)} unit={t(`unit.${pick.unit}`)} size="lg" />
+            <Stepper value={qty} onChange={setQty} step={pick.unit_step} min={pick.unit_step} label={nameOf(pick)} unit={t(`unit.${pick.unit}`)} size="md" />
           </div>
         )}
       </BottomSheet>

@@ -65,7 +65,7 @@ export function VendorsDirectory() {
   const res = usePublicVendors({ q: q.trim() || undefined, area: area.trim() || undefined, stall: stall || undefined, limit: 50 });
   return (
     <div className="flex min-h-dvh flex-col">
-      <TopBar />
+      <TopBar account />
       <main id="main" className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 pt-6">
         <h1 className="text-3xl sm:text-4xl">{t("vendors.title")}</h1>
         <p className="mb-5 mt-1 text-lg text-muted">{t("vendors.sub")}</p>
@@ -102,7 +102,7 @@ export function VendorProfile({ id }: { id: string }) {
   const q = usePublicVendor(id);
   return (
     <div className="flex min-h-dvh flex-col">
-      <TopBar />
+      <TopBar account />
       <main id="main" className="mx-auto w-full max-w-xl flex-1 space-y-4 px-4 pb-16 pt-6">
         <Link href="/vendors" className="inline-flex min-h-11 items-center gap-2 font-semibold text-primary"><ArrowLeft className="size-5" aria-hidden /> {t("vendors.back")}</Link>
         {q.isPending ? <ListSkeleton rows={2} h="h-40" /> : q.isError || !q.data ? <EmptyState title={t("vendors.not_found")} /> : (

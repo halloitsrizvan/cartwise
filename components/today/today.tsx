@@ -2,9 +2,11 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Bell, CloudRain, PartyPopper, Wallet } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
-import { ButtonLink, Card, Chip, ErrorState, ListSkeleton } from "@/components/cw/ui";
+import { Button, ButtonLink, Card, Chip, ErrorState, ListSkeleton } from "@/components/cw/ui";
 import { CountUp } from "@/components/cw/widgets";
+import { CloseSheet } from "@/components/today/close-sheet";
 import { patch, useNotices, useVendor } from "@/lib/api/hooks";
 import type { Today } from "@/lib/api/types";
 import { useI18n } from "@/lib/i18n";
@@ -22,6 +24,7 @@ export function TodayScreen() {
   const qc = useQueryClient();
   const vendor = useVendor();
   const live = useLiveToday();
+  const [closeOpen, setCloseOpen] = useState(false);
   const notices = useNotices();
 
   if (live.isPending) return <ListSkeleton rows={4} h="h-32" />;
@@ -52,9 +55,13 @@ export function TodayScreen() {
       <Card className="space-y-3 !border-0 !bg-deep !text-on-deep" data-testid="next-step">
         <h2 className="text-3xl">{closed ? t("today.next_plan_title") : after6 ? t("today.next_close_title") : t("today.next_sell_title")}</h2>
         <p className="text-lg opacity-85">{closed ? t("today.next_plan_sub") : after6 ? t("today.next_close_sub") : t("today.next_sell_sub")}</p>
-        <ButtonLink href={closed ? "/app/plan" : after6 ? "/app/close" : "/app/sell"} size="lg" variant="accent" className="w-full" data-testid="next-step-cta">
-          {closed ? t("today.see_plan") : after6 ? t("today.close_day") : t("today.sell_now")}
-        </ButtonLink>
+        {after6 && !closed ? (
+          <Button size="lg" variant="accent" className="w-full" onClick={() => setCloseOpen(true)} data-testid="next-step-cta">{t("today.close_day")}</Button>
+        ) : (
+          <ButtonLink href={closed ? "/app/plan" : "/app/sell"} size="lg" variant="accent" className="w-full" data-testid="next-step-cta">
+            {closed ? t("today.see_plan") : t("today.sell_now")}
+          </ButtonLink>
+        )}
       </Card>
 
       <Card className="space-y-3 !bg-primary !text-on-primary">
@@ -94,10 +101,11 @@ export function TodayScreen() {
       )}
 
       {!closed && !after6 && (
-        <ButtonLink href="/app/close" size="md" variant="outline" className="w-full" data-testid="close-day-cta">
+        <Button size="md" variant="outline" className="w-full" onClick={() => setCloseOpen(true)} data-testid="close-day-cta">
           {t("today.close_day")}
-        </ButtonLink>
+        </Button>
       )}
+      <CloseSheet open={closeOpen} onClose={() => setCloseOpen(false)} />
     </div>
   );
 }
