@@ -15,7 +15,7 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== location.origin) return;
   if (url.pathname.startsWith("/api/")) return; // data caching is handled in the app (IndexedDB)
   // static build assets: cache-first
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/")) {
+  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || url.pathname.startsWith("/logo")) {
     e.respondWith(
       caches.match(req).then((hit) => hit || fetch(req).then((res) => { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); return res; })),
     );

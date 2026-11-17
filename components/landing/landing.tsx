@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DemoRow } from "@/components/auth/auth-forms";
+import { Logo } from "@/components/cw/logo";
 import { AccountButton, LangToggle } from "@/components/cw/shell";
 import { ButtonLink } from "@/components/cw/ui";
 import { BestVendors } from "@/components/public/vendors";
@@ -12,15 +13,6 @@ import { APP_NAME } from "@/config/brand";
 import { api } from "@/lib/api/client";
 import { useT } from "@/lib/i18n";
 import { CoinsIllustration, ListIllustration, PhoneMock, TabletMock } from "./mockups";
-
-function Logo({ light }: { light?: boolean }) {
-  return (
-    <Link href="/" className={`inline-flex items-center gap-2 font-heading text-xl font-extrabold sm:text-2xl ${light ? "text-on-deep" : "text-primary"}`} aria-label={APP_NAME}>
-      <span className="grid size-9 place-items-center rounded-xl bg-primary text-lg text-on-primary" aria-hidden>C</span>
-      {APP_NAME}
-    </Link>
-  );
-}
 
 function EmailCta({ id }: { id: string }) {
   const t = useT();

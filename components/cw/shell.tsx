@@ -5,12 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { toast } from "sonner";
-import { APP_NAME } from "@/config/brand";
 import { useMe } from "@/lib/api/hooks";
 import { post } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
 import { onOpApplied, onSyncFailure, onSynced, startSync, useSyncState } from "@/lib/offline/queue";
 import { cn } from "@/lib/utils";
+import { Logo } from "./logo";
 import { ButtonLink, Chip, ListSkeleton } from "./ui";
 
 export function LangToggle() {
@@ -84,9 +84,7 @@ export function TopBar({ right, account }: { right?: ReactNode; account?: boolea
   return (
     <header className="sticky top-0 z-30 border-b-[length:var(--bw)] border-line bg-bg/95 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center gap-2 px-4 py-2">
-        <Link href="/" className="font-heading text-xl font-bold text-primary" aria-label={`${APP_NAME} ${t("common.home")}`}>
-          {APP_NAME}
-        </Link>
+        <Logo />
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <LangToggle />
           {account && <AccountButton />}
