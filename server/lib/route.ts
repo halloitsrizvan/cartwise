@@ -3,7 +3,7 @@
 import type { Profile } from "@prisma/client";
 import { connection, NextResponse } from "next/server";
 import { z } from "zod";
-import type { Role } from "@/lib/schemas/profile";
+import type { Role } from "@/shared/schemas/domain";
 import { requireRole, requireUser } from "./auth";
 import { AppError } from "./errors";
 import { clientIp, rateLimit } from "./rate-limit";
@@ -14,7 +14,7 @@ type Opts<B extends z.ZodType | undefined, Q extends z.ZodType | undefined> = {
   body?: B;
   query?: Q;
   /** Per-instance limiter, keyed by name + user id (or IP when public). */
-  rateLimit?: { name: string; limit: number; windowMs: number };
+  rateLimit?: { name: string; limit: number; windowSec: number };
 };
 
 type Ctx<B, Q> = {
@@ -62,8 +62,8 @@ export function route<
       else if (Array.isArray(opts.auth)) user = await requireRole(...opts.auth);
 
       if (opts.rateLimit) {
-        const { name, limit, windowMs } = opts.rateLimit;
-        rateLimit(`${name}:${user?.id ?? clientIp(req)}`, limit, windowMs);
+        const { name, limit, windowSec } = opts.rateLimit;
+        await rateLimit(`${name}:${user?.id ?? clientIp(req)}`, limit, windowSec);
       }
 
       let body: unknown;

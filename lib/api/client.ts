@@ -1,5 +1,5 @@
 // Typed fetch client. Unwraps { data } and throws ApiClientError on { error }.
-import type { ApiError } from "@/lib/schemas/common";
+import type { ApiError } from "@/shared/schemas/common";
 
 export class ApiClientError extends Error {
   constructor(

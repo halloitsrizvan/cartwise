@@ -1,8 +1,8 @@
 "use client";
 // Pattern: a query key + api<T>() call + shared Zod type. Add one hook per endpoint.
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ProfileDTO } from "@/lib/schemas/profile";
-import type { SignUploadBody, SignUploadResponse } from "@/lib/schemas/upload";
+import type { ProfileDTO } from "@/shared/schemas/profile";
+import type { SignUploadBody, SignUploadResponse } from "@/shared/schemas/upload";
 import { api } from "./client";
 
 export const useMe = () =>

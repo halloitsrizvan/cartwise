@@ -1,28 +1,25 @@
+// Postgres-backed fixed-window limiter (rate_limits table). Works across serverless instances.
 import { AppError } from "./errors";
+import { prisma } from "./prisma";
 
-// In-memory fixed-window limiter. PER INSTANCE ONLY: on Vercel each lambda has its
-// own memory, so limits are approximate. Swap for @upstash/ratelimit in production.
-const buckets = new Map<string, { count: number; resetAt: number }>();
-
-export function rateLimit(key: string, limit: number, windowMs: number): void {
-  const now = Date.now();
-  const b = buckets.get(key);
-  if (!b || b.resetAt <= now) {
-    if (buckets.size > 10_000) {
-      for (const [k, v] of buckets) if (v.resetAt <= now) buckets.delete(k);
-    }
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
+export async function rateLimit(key: string, limit: number, windowSec: number): Promise<void> {
+  const now = new Date();
+  const k = key.slice(0, 200);
+  const row = await prisma.rateLimit.findUnique({ where: { key: k } });
+  if (!row || row.windowStart.getTime() + windowSec * 1000 <= now.getTime()) {
+    await prisma.rateLimit.upsert({
+      where: { key: k },
+      create: { key: k, windowStart: now, count: 1 },
+      update: { windowStart: now, count: 1 },
+    });
     return;
   }
-  b.count += 1;
-  if (b.count > limit) throw AppError.rateLimited(Math.ceil((b.resetAt - now) / 1000));
+  const updated = await prisma.rateLimit.update({ where: { key: k }, data: { count: { increment: 1 } } });
+  if (updated.count > limit) {
+    throw AppError.rateLimited(Math.max(1, Math.ceil((row.windowStart.getTime() + windowSec * 1000 - now.getTime()) / 1000)));
+  }
 }
 
 export function clientIp(req: Request): string {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-}
-
-/** Test helper. */
-export function resetRateLimits() {
-  buckets.clear();
 }

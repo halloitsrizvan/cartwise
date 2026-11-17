@@ -1,4 +1,4 @@
-import type { Health } from "@/lib/schemas/health";
+import type { Health } from "@/shared/schemas/health";
 import { healthRepository } from "../repositories/health.repository";
 import { AppError } from "../lib/errors";
 

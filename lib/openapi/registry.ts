@@ -1,7 +1,7 @@
 // Single OpenAPI registry. Each feature registers its paths in lib/openapi/<feature>.ts,
 // then is imported in lib/openapi/index.ts. See docs/ADD_A_FEATURE.md.
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
-import { ErrorResponseSchema, successSchema } from "@/lib/schemas/common";
+import { ErrorResponseSchema, successSchema } from "@/shared/schemas/common";
 import type { z } from "zod";
 
 export const registry = new OpenAPIRegistry();

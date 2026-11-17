@@ -1,5 +1,5 @@
-// DATABASE_URL = Supabase pooled connection (pgbouncer, port 6543) — used at runtime.
-// DIRECT_URL   = Supabase direct connection (port 5432) — used by db push / migrate.
+// DATABASE_URL = Supabase pooled connection (pgbouncer, port 6543) - runtime.
+// DIRECT_URL   = Supabase session/direct connection (port 5432) - migrations.
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,17 +11,354 @@ datasource db {
 }
 
 enum Role {
-  USER
-  ADMIN
+  @@map("user_role")
+  vendor
+  officer
+  market
 }
 
-/// One row per Supabase auth user. `id` equals auth.users.id.
+enum Lang {
+  ml
+  en
+}
+
+enum StallType {
+  fruit
+  vegetable
+  tea_snacks
+  juice
+}
+
+enum Unit {
+  kg
+  piece
+  cup
+  bundle
+}
+
+enum DayStatus {
+  open
+  closed
+}
+
+enum OfferStatus {
+  active
+  expired
+  reported
+  removed
+}
+
+enum RegStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
 model Profile {
   id        String   @id @db.Uuid
-  email     String   @unique
-  name      String?
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
+  role      Role
+  name      String
+  phone     String?  @unique
+  email     String?  @unique
+  language  Lang     @default(ml)
+  area      String   @default("")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  vendor Vendor?
+  market Market?
 
   @@index([role])
+  @@map("profiles")
+}
+
+model Vendor {
+  profileId String    @id @map("profile_id") @db.Uuid
+  stallType StallType @map("stall_type")
+  area      String
+  onboarded Boolean   @default(false)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  profile       Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  items         Item[]
+  dayLogs       DayLog[]
+  plans         Plan[]
+  offerViews    OfferView[]
+  noticeReads   NoticeRead[]
+  shareLinks    ShareLink[]
+  registrations Registration[]
+
+  @@map("vendors")
+}
+
+model Item {
+  id           String   @id @default(uuid()) @db.Uuid
+  vendorId     String   @map("vendor_id") @db.Uuid
+  nameMl       String   @map("name_ml")
+  nameEn       String   @map("name_en")
+  emoji        String   @default("")
+  unit         Unit
+  unitStep     Float    @default(1) @map("unit_step")
+  buyPrice     Float    @map("buy_price")
+  sellPrice    Float    @map("sell_price")
+  categorySlug String   @map("category_slug")
+  perishable   Boolean  @default(true)
+  active       Boolean  @default(true)
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  vendor     Vendor           @relation(fields: [vendorId], references: [profileId], onDelete: Cascade)
+  sales      SaleEvent[]
+  summaries  DayItemSummary[]
+  planActual PlanActual[]
+
+  @@index([vendorId])
+  @@map("items")
+}
+
+model DayLog {
+  id           String    @id @default(uuid()) @db.Uuid
+  vendorId     String    @map("vendor_id") @db.Uuid
+  date         DateTime  @db.Date
+  rain         Boolean   @default(false)
+  festival     Boolean   @default(false)
+  paydayWeek   Boolean   @default(false) @map("payday_week")
+  status       DayStatus @default(open)
+  purchaseCost Float     @default(0) @map("purchase_cost")
+  closedAt     DateTime? @map("closed_at")
+  closePayload String?   @map("close_payload")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  vendor    Vendor           @relation(fields: [vendorId], references: [profileId], onDelete: Cascade)
+  sales     SaleEvent[]
+  summaries DayItemSummary[]
+
+  @@unique([vendorId, date])
+  @@index([vendorId, date])
+  @@map("day_logs")
+}
+
+model SaleEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  dayLogId  String   @map("day_log_id") @db.Uuid
+  itemId    String   @map("item_id") @db.Uuid
+  qty       Float
+  ts        DateTime
+  clientId  String   @unique @map("client_id")
+  voided    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  dayLog DayLog @relation(fields: [dayLogId], references: [id], onDelete: Cascade)
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([dayLogId])
+  @@index([itemId])
+  @@map("sale_events")
+}
+
+model DayItemSummary {
+  dayLogId    String   @map("day_log_id") @db.Uuid
+  itemId      String   @map("item_id") @db.Uuid
+  boughtQty   Float    @map("bought_qty")
+  soldQty     Float    @map("sold_qty")
+  leftoverQty Float    @map("leftover_qty")
+  soldOut     Boolean  @default(false) @map("sold_out")
+  soldOutAt   String?  @map("sold_out_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  dayLog DayLog @relation(fields: [dayLogId], references: [id], onDelete: Cascade)
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([dayLogId, itemId])
+  @@index([itemId])
+  @@map("day_item_summaries")
+}
+
+model Plan {
+  id                  String   @id @default(uuid()) @db.Uuid
+  vendorId            String   @map("vendor_id") @db.Uuid
+  forDate             DateTime @map("for_date") @db.Date
+  generatedAt         DateTime @default(now()) @map("generated_at")
+  lines               Json
+  overrides           Json     @default("{}")
+  totalExpectedProfit Float    @map("total_expected_profit")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  vendor  Vendor       @relation(fields: [vendorId], references: [profileId], onDelete: Cascade)
+  actuals PlanActual[]
+
+  @@unique([vendorId, forDate])
+  @@index([vendorId, forDate])
+  @@map("plans")
+}
+
+model PlanActual {
+  planId    String   @map("plan_id") @db.Uuid
+  itemId    String   @map("item_id") @db.Uuid
+  boughtQty Float    @map("bought_qty")
+  followed  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([planId, itemId])
+  @@index([itemId])
+  @@map("plan_actuals")
+}
+
+model Market {
+  profileId  String    @id @map("profile_id") @db.Uuid
+  marketName String    @map("market_name")
+  area       String
+  approved   Boolean   @default(false)
+  approvedBy String?   @map("approved_by") @db.Uuid
+  approvedAt DateTime? @map("approved_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  offers  Offer[]
+
+  @@map("markets")
+}
+
+model Offer {
+  id           String      @id @default(uuid()) @db.Uuid
+  marketId     String      @map("market_id") @db.Uuid
+  categorySlug String      @map("category_slug")
+  titleMl      String      @map("title_ml")
+  titleEn      String      @map("title_en")
+  price        Float
+  unit         Unit
+  qtyAvailable Float       @map("qty_available")
+  validFrom    DateTime    @map("valid_from")
+  validTo      DateTime    @map("valid_to")
+  area         String
+  status       OfferStatus @default(active)
+  reportCount  Int         @default(0) @map("report_count")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  market Market      @relation(fields: [marketId], references: [profileId], onDelete: Cascade)
+  views  OfferView[]
+
+  @@index([marketId])
+  @@index([categorySlug, area])
+  @@map("offers")
+}
+
+model OfferView {
+  id        String   @id @default(uuid()) @db.Uuid
+  offerId   String   @map("offer_id") @db.Uuid
+  vendorId  String   @map("vendor_id") @db.Uuid
+  seenAt    DateTime @default(now()) @map("seen_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  offer  Offer  @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [profileId], onDelete: Cascade)
+
+  @@unique([offerId, vendorId])
+  @@index([vendorId])
+  @@map("offer_views")
+}
+
+model Notice {
+  id          String   @id @default(uuid()) @db.Uuid
+  officerId   String   @map("officer_id") @db.Uuid
+  titleMl     String   @map("title_ml")
+  titleEn     String   @map("title_en")
+  bodyMl      String   @map("body_ml")
+  bodyEn      String   @map("body_en")
+  schemeTag   String   @map("scheme_tag")
+  areaFilter  String?  @map("area_filter")
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  reads NoticeRead[]
+
+  @@index([officerId])
+  @@map("notices")
+}
+
+model NoticeRead {
+  id        String   @id @default(uuid()) @db.Uuid
+  noticeId  String   @map("notice_id") @db.Uuid
+  vendorId  String   @map("vendor_id") @db.Uuid
+  readAt    DateTime @default(now()) @map("read_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  notice Notice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [profileId], onDelete: Cascade)
+
+  @@unique([noticeId, vendorId])
+  @@index([vendorId])
+  @@map("notice_reads")
+}
+
+model ShareLink {
+  id        String    @id @default(uuid()) @db.Uuid
+  vendorId  String    @map("vendor_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [profileId], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@map("share_links")
+}
+
+model Registration {
+  id           String    @id @default(uuid()) @db.Uuid
+  vendorId     String    @map("vendor_id") @db.Uuid
+  scheme       String    @default("pm_svanidhi")
+  status       RegStatus @default(draft)
+  selfDeclared Json      @default("{}") @map("self_declared")
+  updatedBy    String?   @map("updated_by") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [profileId], onDelete: Cascade)
+
+  @@unique([vendorId, scheme])
+  @@index([vendorId])
+  @@map("registrations")
+}
+
+model RateLimit {
+  key         String   @id
+  windowStart DateTime @map("window_start")
+  count       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("rate_limits")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String   @map("actor_id") @db.Uuid
+  action    String
+  entity    String
+  entityId  String   @map("entity_id")
+  meta      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([actorId])
+  @@map("audit_log")
 }
