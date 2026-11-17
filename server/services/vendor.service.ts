@@ -16,6 +16,9 @@ export const vendorService = {
       area: v.area,
       stall_type: v.stallType,
       onboarded: v.onboarded,
+      public_listed: v.publicListed,
+      public_phone: v.publicPhone,
+      public_place: v.publicPlace,
       demo: process.env.DEMO_MODE === "true" && isDemoPhone(v.profile.phone),
     };
   },

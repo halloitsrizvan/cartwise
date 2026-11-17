@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Anek_Malayalam, Inter, Noto_Sans_Malayalam } from "next/font/google";
+import { Anek_Malayalam, Hanken_Grotesk, Inter, Noto_Sans_Malayalam } from "next/font/google";
 import { Providers } from "@/components/layout/providers";
 import { APP_NAME } from "@/config/brand";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -7,6 +7,8 @@ import "./globals.css";
 
 const anek = Anek_Malayalam({ variable: "--font-anek", subsets: ["malayalam", "latin"], weight: ["500", "700", "800"], display: "swap" });
 const noto = Noto_Sans_Malayalam({ variable: "--font-noto", subsets: ["malayalam", "latin"], weight: ["400", "500", "600", "700"], display: "swap" });
+/** Free stand-in for Degular (modern bold grotesque). If the licensed Degular is installed on the device, the CSS stack picks it first. */
+const hanken = Hanken_Grotesk({ variable: "--font-hanken", subsets: ["latin"], weight: ["400", "500", "600", "700", "800", "900"], display: "swap" });
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -31,14 +33,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0E7A55" },
-    { media: "(prefers-color-scheme: dark)", color: "#0F1A14" },
+    { media: "(prefers-color-scheme: light)", color: "#088178" },
+    { media: "(prefers-color-scheme: dark)", color: "#032724" },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ml" suppressHydrationWarning className={`${anek.variable} ${noto.variable} ${inter.variable}`}>
+    <html lang="ml" suppressHydrationWarning className={`${anek.variable} ${noto.variable} ${inter.variable} ${hanken.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

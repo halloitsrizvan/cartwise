@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const RoleSchema = z.enum(["vendor", "officer", "market"]);
+export const RoleSchema = z.enum(["vendor", "admin"]);
 export type Role = z.infer<typeof RoleSchema>;
 export const LangSchema = z.enum(["ml", "en"]);
 export type Lang = z.infer<typeof LangSchema>;
@@ -15,25 +15,17 @@ export const DateStr = z.iso.date();
 
 // ---- auth ----
 export const LoginSchema = z.strictObject({
-  identifier: z.string().trim().min(3).max(120),
-  secret: z.string().min(4).max(128),
+  email: z.email("EMAIL_INVALID").max(120),
+  password: z.string().min(1).max(128),
 });
 export const RegisterVendorSchema = z.strictObject({
-  phone: z.string().trim().regex(/^\d{10}$/, "PHONE_INVALID"),
-  pin: z.string().regex(/^\d{4,6}$/, "PIN_INVALID"),
-});
-export const RegisterMarketSchema = z.strictObject({
-  email: z.email().max(120),
-  password: z.string().min(8).max(128),
-  name: text(80),
-  market_name: text(100),
-  area: text(80),
-  phone: z.string().trim().regex(/^[0-9]{10}$/).optional(),
+  email: z.email("EMAIL_INVALID").max(120),
+  password: z.string().min(8, "PASSWORD_SHORT").max(128),
 });
 export const DemoLoginSchema = z.strictObject({ role: RoleSchema });
-export const PinChangeSchema = z.strictObject({
-  current_pin: z.string().regex(/^\d{4,6}$/),
-  new_pin: z.string().regex(/^\d{4,6}$/),
+export const PasswordChangeSchema = z.strictObject({
+  current_password: z.string().min(1).max(128),
+  new_password: z.string().min(8, "PASSWORD_SHORT").max(128),
 });
 
 // ---- items ----
@@ -82,6 +74,15 @@ export const VendorPatchSchema = z.strictObject({
   name: text(60).optional(),
   language: LangSchema.optional(),
   area: text(80).optional(),
+  public_listed: z.boolean().optional(),
+  public_phone: z.string().trim().regex(/^[0-9]{10}$/, "PHONE_INVALID").nullish(),
+  public_place: z.string().trim().max(120).nullish(),
+});
+export const PublicVendorsQuery = z.object({
+  area: z.string().trim().max(80).optional(),
+  stall: StallTypeSchema.optional(),
+  q: z.string().trim().max(60).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(30),
 });
 
 // ---- day ----
@@ -127,7 +128,7 @@ export const SelfDeclaredSchema = z.strictObject({
 });
 export const ShareCreateSchema = z.strictObject({ expires_in_days: z.number().int().min(1).max(90).optional() });
 
-// ---- officer ----
+// ---- admin ----
 export const NoticeInputSchema = z.strictObject({
   title_ml: text(140),
   title_en: text(140),
@@ -138,23 +139,6 @@ export const NoticeInputSchema = z.strictObject({
 });
 export const NoticePatchSchema = NoticeInputSchema.partial();
 export const RegistrationPatchSchema = z.strictObject({ status: z.enum(["draft", "submitted", "approved", "rejected"]) });
-export const MarketApproveSchema = z.strictObject({ approved: z.boolean() });
-
-// ---- market ----
-export const OfferInputSchema = z.strictObject({
-  category_slug: slug,
-  title_ml: text(140),
-  title_en: text(140),
-  price: z.number().min(0).max(100000),
-  unit: UnitSchema,
-  qty_available: z.number().min(0).max(1000000),
-  valid_from: z.iso.datetime({ offset: true }),
-  valid_to: z.iso.datetime({ offset: true }),
-  area: text(80),
-});
-export const OfferPatchSchema = OfferInputSchema.partial().extend({
-  status: z.enum(["active", "expired", "removed"]).optional(),
-});
 
 export type PlanLine = {
   demand?: number;

@@ -1,7 +1,7 @@
 import type { ItemDTO, PlanLine } from "@/shared/schemas/domain";
 
-export type Me = { id: string; role: "vendor" | "officer" | "market"; name: string; language: "ml" | "en"; onboarded: boolean; approved?: boolean; demo: boolean };
-export type VendorMe = { id: string; name: string; phone: string | null; language: "ml" | "en"; area: string; stall_type: "fruit" | "vegetable" | "tea_snacks" | "juice"; onboarded: boolean; demo: boolean };
+export type Me = { id: string; role: "vendor" | "admin"; name: string; language: "ml" | "en"; onboarded: boolean; approved?: boolean; demo: boolean };
+export type VendorMe = { id: string; name: string; phone: string | null; language: "ml" | "en"; area: string; stall_type: "fruit" | "vegetable" | "tea_snacks" | "juice"; onboarded: boolean; demo: boolean; public_listed: boolean; public_phone: string | null; public_place: string | null };
 export type DaySummary = { revenue: number; waste_value: number; missed_sales_estimate: number; profit: number; waste_pct: number; purchase_cost: number };
 export type TodayItem = ItemDTO & { sold_qty: number };
 export type Today = {
@@ -55,20 +55,14 @@ export type Readiness = {
   indicative: boolean;
 };
 export type ShareLinkRow = { id: string; created_at: string; expires_at: string; active: boolean };
-export type OfferCard = {
-  id: string; category_slug: string; title_ml: string; title_en: string; price: number; unit: string; qty_available: number;
-  valid_from: string; valid_to: string; area: string; status: string; saving: number; recommended_qty: number; seen: boolean;
-  item: { id: string; name_ml: string; name_en: string; emoji: string; buy_price: number };
-  market: { name: string; area: string; phone: string | null };
-};
 export type NoticeRow = { id: string; title_ml: string; title_en: string; body_ml: string; body_en: string; scheme_tag: string; area_filter: string | null; published_at: string; read: boolean; read_count?: number };
-export type OfficerOverview = {
+export type AdminOverview = {
   kpis: { active_vendors: number; total_vendors: number; avg_waste_reduction_pts: number; avg_daily_income: number; ready_vendors: number };
   trend: { date: string; avg_waste_pct: number; avg_profit: number }[];
   area_breakdown: { area: string; vendors: number; avg_daily_profit: number; avg_waste_pct: number }[];
   demo: boolean;
 };
-export type OfficerVendor = { id: string; name: string; area: string; stall_type: string; readiness_percent: number; logged_days: number; avg_daily_profit: number; registration_status: string };
+export type AdminVendor = { id: string; name: string; area: string; stall_type: string; readiness_percent: number; logged_days: number; avg_daily_profit: number; registration_status: string };
 export type AppSummary = {
   simulated: true; registration_id: string; scheme: string; status: string;
   applicant: { name: string; phone: string | null; area: string; stall_type: string; language: string };
@@ -77,9 +71,8 @@ export type AppSummary = {
   self_declared: Record<string, boolean>;
   updated_at: string;
 };
-export type MarketRow = { id: string; market_name: string; area: string; email: string | null; approved: boolean; approved_at: string | null };
-export type MarketOffer = {
-  id: string; category_slug: string; title_ml: string; title_en: string; price: number; unit: string; qty_available: number;
-  valid_from: string; valid_to: string; area: string; status: string; report_count: number; views: number;
+export type PublicVendor = {
+  id: string; first_name: string; stall_type: string; area: string; place: string | null;
+  score: number; badges: string[]; days_active: number; rank: number;
 };
-export type MarketStats = { offers_live: number; vendors_reached: number; views: number; approved: boolean; market_name: string };
+export type PublicVendorProfile = PublicVendor & { phone: string | null; consistency: string; items: { name_ml: string; name_en: string; emoji: string }[] };

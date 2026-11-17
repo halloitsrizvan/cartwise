@@ -14,7 +14,7 @@ npm run db:seed                   # 3 vendors x 28-32 days, officer, 2 markets, 
 npm run dev                       # http://localhost:3000   API docs: /api/docs
 ```
 
-Demo logins (when `DEMO_MODE=true`): buttons on `/` and `/login`. Vendor `9000000001` / PIN `1234`; officer `officer@demo.cartwise.app`; market `market@demo.cartwise.app`.
+Demo logins (when `DEMO_MODE=true`): buttons on `/` and `/login`. Vendor `vendor@demo.cartwise.app` / `Demo-Vendor-2026`; admin `admin@demo.cartwise.app` / `Demo-Admin-2026`.
 
 ## Environment
 
@@ -43,7 +43,7 @@ Supabase Postgres (RLS deny-all)      Supabase Auth (role in app_metadata)
 shared/schemas  (Zod, used by server + client + OpenAPI)      shared/voice.ts (voice parser)
 ```
 
-- **Auth**: Supabase Auth. Vendors: phone + PIN mapped to `<phone>@vendor.local`, password `cw-<PIN>` (Supabase needs 6+ chars). SMS OTP is the production path (needs a paid provider). Officers/markets: email + password. One guard `requireRole()` in [server/lib/auth.ts](server/lib/auth.ts); ownership ids always come from the session.
+- **Auth**: Supabase Auth, email + password for every role (vendor, admin); role in `app_metadata`. Admin accounts are created by seed only. One guard `requireRole()` in [server/lib/auth.ts](server/lib/auth.ts); ownership ids always come from the session.
 - **Offline**: Sell and Close write to an IndexedDB queue first (optimistic), sync on reconnect with retry; sales are idempotent on `client_id`; close-day is idempotent (same payload 200, different 409) and runs in one transaction with `SELECT ... FOR UPDATE`.
 - **Forecast**: newsvendor on the last 8 closed days. Constants in [server/config/constants.ts](server/config/constants.ts).
 - **Rate limits** are Postgres-backed (`rate_limits`): login, public passport, share creation.

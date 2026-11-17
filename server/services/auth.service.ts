@@ -1,25 +1,16 @@
-import type { z } from "zod";
-import type { RegisterMarketSchema, Role } from "@/shared/schemas/domain";
-import { DEMO_ACCOUNTS, pinToPassword, vendorEmail } from "../config/demo";
+import type { Role } from "@/shared/schemas/domain";
+import { DEMO_ACCOUNTS } from "../config/demo";
 import { AppError } from "../lib/errors";
 import { prisma } from "../lib/prisma";
 import { createSupabaseServerClient } from "../lib/supabase";
 import { supabaseAdmin } from "../lib/supabase-admin";
-
-const PHONE_RE = /^\+?(?:91)?[\s-]?(\d{10})$/;
-
-function credentials(identifier: string, secret: string) {
-  const m = PHONE_RE.exec(identifier.replace(/\s|-/g, ""));
-  if (m) return { email: vendorEmail(m[1]), password: pinToPassword(secret), vendor: true };
-  return { email: identifier.toLowerCase(), password: secret, vendor: false };
-}
 
 async function signIn(email: string, password: string) {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error || !data.user) throw new AppError(401, "UNAUTHORIZED", "Invalid credentials");
   const role = data.user.app_metadata?.role as Role | undefined;
-  const profile = role ? await prisma.profile.findUnique({ where: { id: data.user.id }, include: { vendor: true, market: true } }) : null;
+  const profile = role ? await prisma.profile.findUnique({ where: { id: data.user.id }, include: { vendor: true } }) : null;
   if (!role || !profile) {
     await supabase.auth.signOut();
     throw new AppError(401, "UNAUTHORIZED", "Invalid credentials");
@@ -28,7 +19,6 @@ async function signIn(email: string, password: string) {
     role,
     name: profile.name,
     onboarded: role === "vendor" ? !!profile.vendor?.onboarded : true,
-    approved: role === "market" ? !!profile.market?.approved : undefined,
   };
 }
 
@@ -48,44 +38,22 @@ async function createAuthUser(email: string, password: string, role: Role) {
 }
 
 export const authService = {
-  login: (identifier: string, secret: string) => {
-    const c = credentials(identifier, secret);
-    return signIn(c.email, c.password);
-  },
+  login: (email: string, password: string) => signIn(email.trim().toLowerCase(), password),
 
-  async registerVendor(phone: string, pin: string) {
-    const existing = await prisma.profile.findUnique({ where: { phone } });
-    if (existing) throw AppError.conflict("Account already exists");
-    const id = await createAuthUser(vendorEmail(phone), pinToPassword(pin), "vendor");
-    await prisma.profile.create({
-      data: { id, role: "vendor", name: "", phone, vendor: { create: { stallType: "fruit", area: "" } } },
-    });
-    return signIn(vendorEmail(phone), pinToPassword(pin));
-  },
-
-  async registerMarket(input: z.infer<typeof RegisterMarketSchema>) {
-    const email = input.email.toLowerCase();
+  async registerVendor(emailIn: string, password: string) {
+    const email = emailIn.trim().toLowerCase();
     if (await prisma.profile.findUnique({ where: { email } })) throw AppError.conflict("Account already exists");
-    const id = await createAuthUser(email, input.password, "market");
+    const id = await createAuthUser(email, password, "vendor");
     await prisma.profile.create({
-      data: {
-        id,
-        role: "market",
-        name: input.name,
-        email,
-        phone: input.phone,
-        area: input.area,
-        market: { create: { marketName: input.market_name, area: input.area, approved: false } },
-      },
+      data: { id, role: "vendor", name: "", email, vendor: { create: { stallType: "fruit", area: "" } } },
     });
-    return signIn(email, input.password);
+    return signIn(email, password);
   },
 
   async demo(role: Role) {
     if (process.env.DEMO_MODE !== "true") throw AppError.forbidden("Demo mode is off");
     const a = DEMO_ACCOUNTS[role];
-    const c = credentials(a.identifier, a.secret);
-    return signIn(c.email, c.password);
+    return signIn(a.identifier, a.secret);
   },
 
   async logout() {
@@ -94,12 +62,12 @@ export const authService = {
     return { ok: true };
   },
 
-  async changePin(vendorId: string, phone: string, current: string, next: string) {
+  async changePassword(vendorId: string, email: string, current: string, next: string) {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.signInWithPassword({ email: vendorEmail(phone), password: pinToPassword(current) });
-    if (error) throw new AppError(401, "UNAUTHORIZED", "Current PIN is wrong");
-    const { error: e2 } = await supabaseAdmin().auth.admin.updateUserById(vendorId, { password: pinToPassword(next) });
-    if (e2) throw new AppError(500, "INTERNAL", "Could not change PIN");
+    const { error } = await supabase.auth.signInWithPassword({ email, password: current });
+    if (error) throw new AppError(401, "UNAUTHORIZED", "Current password is wrong");
+    const { error: e2 } = await supabaseAdmin().auth.admin.updateUserById(vendorId, { password: next });
+    if (e2) throw new AppError(500, "INTERNAL", "Could not change password");
     return { ok: true };
   },
 };

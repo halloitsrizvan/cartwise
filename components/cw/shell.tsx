@@ -1,6 +1,6 @@
 "use client";
 import { useQueryClient } from "@tanstack/react-query";
-import { BarChart3, CloudOff, CloudUpload, Home, Languages, LogOut, MoreHorizontal, ShoppingBasket, Wallet, ClipboardList, Check, FileText, Building2, Tag, LayoutDashboard } from "lucide-react";
+import { CloudOff, CloudUpload, Home, Languages, LogOut, MoreHorizontal, ShoppingBasket, Wallet, ClipboardList, FileText, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
@@ -32,14 +32,15 @@ export function OfflineBadge() {
   const { t } = useI18n();
   const s = useSyncState();
   const off = !s.online;
-  let label = t("sync.synced");
-  let Icon = Check;
-  let cls = "bg-primary-soft text-ink";
+  if (!off && s.pending === 0) return null; // nothing to report: no "Synced" badge
+  let label = "";
+  let Icon = CloudUpload;
+  let cls = "";
   if (off) {
     label = t("sync.offline", { n: s.pending });
     Icon = CloudOff;
     cls = "bg-accent text-on-accent";
-  } else if (s.pending > 0) {
+  } else {
     label = t("sync.syncing", { n: s.pending });
     Icon = CloudUpload;
     cls = "bg-accent text-on-accent";
@@ -68,7 +69,6 @@ export function TopBar({ right }: { right?: ReactNode }) {
           {APP_NAME}
         </Link>
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <DemoBadge />
           <OfflineBadge />
           <LangToggle />
           {right}
@@ -79,7 +79,7 @@ export function TopBar({ right }: { right?: ReactNode }) {
 }
 
 /** Starts sync, guards the role, redirects when signed out. */
-export function useRoleGuard(role: "vendor" | "officer" | "market") {
+export function useRoleGuard(role: "vendor" | "admin") {
   const router = useRouter();
   const me = useMe();
   const { t } = useI18n();
@@ -109,7 +109,7 @@ export function useRoleGuard(role: "vendor" | "officer" | "market") {
   useEffect(() => {
     const d = me.data;
     if (me.error && (me.error as { status?: number }).status === 401) router.replace("/login");
-    if (d && d.role !== role) router.replace(d.role === "vendor" ? "/app" : `/${d.role}`);
+    if (d && d.role !== role) router.replace(d.role === "vendor" ? "/app" : "/admin");
     if (d && role === "vendor" && !d.onboarded) router.replace("/onboarding");
   }, [me.data, me.error, role, router]);
   return me;
@@ -157,23 +157,18 @@ export function VendorShell({ children }: { children: ReactNode }) {
 }
 
 type NavItem = { href: string; key: string; icon: typeof Home };
-const OFFICER_NAV: NavItem[] = [
-  { href: "/officer", key: "officer.nav.overview", icon: LayoutDashboard },
-  { href: "/officer/notices", key: "officer.nav.notices", icon: FileText },
-  { href: "/officer/registrations", key: "officer.nav.registrations", icon: ClipboardList },
-  { href: "/officer/markets", key: "officer.nav.markets", icon: Building2 },
-];
-const MARKET_NAV: NavItem[] = [
-  { href: "/market", key: "market.nav.overview", icon: BarChart3 },
-  { href: "/market/new", key: "market.nav.create", icon: Tag },
+const ADMIN_NAV: NavItem[] = [
+  { href: "/admin", key: "officer.nav.overview", icon: LayoutDashboard },
+  { href: "/admin/notices", key: "officer.nav.notices", icon: FileText },
+  { href: "/admin/registrations", key: "officer.nav.registrations", icon: ClipboardList },
 ];
 
-export function SideShell({ role, children }: { role: "officer" | "market"; children: ReactNode }) {
+export function SideShell({ role, children }: { role: "admin"; children: ReactNode }) {
   const me = useRoleGuard(role);
   const path = usePathname();
   const router = useRouter();
   const { t } = useI18n();
-  const nav = role === "officer" ? OFFICER_NAV : MARKET_NAV;
+  const nav = ADMIN_NAV;
   const logout = async () => {
     await post("/api/v1/auth/logout").catch(() => {});
     router.replace("/login");

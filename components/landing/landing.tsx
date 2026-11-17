@@ -4,6 +4,7 @@ import { BarChart3, ShieldCheck, ShoppingBasket } from "lucide-react";
 import { TopBar } from "@/components/cw/shell";
 import { ButtonLink, Card } from "@/components/cw/ui";
 import { DemoRow } from "@/components/auth/auth-forms";
+import { BestVendors } from "@/components/public/vendors";
 import { api } from "@/lib/api/client";
 import { useT } from "@/lib/i18n";
 import { APP_NAME } from "@/config/brand";
@@ -63,16 +64,16 @@ export function Landing() {
     <div className="flex min-h-dvh flex-col">
       <TopBar />
       <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 pb-16">
-        <section className="grid items-center gap-6 py-8 md:grid-cols-2">
+        <section className="my-4 grid items-center gap-6 rounded-[32px] bg-deep p-6 text-on-deep md:grid-cols-2 md:p-10">
           <div className="space-y-5">
             <h1 className="text-4xl leading-tight md:text-5xl">{t("landing.title")}</h1>
-            <p className="text-xl text-muted">{t("landing.sub")}</p>
+            <p className="text-xl opacity-85">{t("landing.sub")}</p>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/register" size="lg" variant="primary">{t("landing.vendor_cta")}</ButtonLink>
-              <ButtonLink href="/login?role=staff" size="lg" variant="outline">{t("landing.staff_cta")}</ButtonLink>
+              <ButtonLink href="/register" size="lg" variant="accent">{t("landing.vendor_cta")}</ButtonLink>
+              <ButtonLink href="/vendors" size="lg" variant="outline">{t("landing.find_cta")}</ButtonLink>
             </div>
           </div>
-          <CartIllustration />
+          <div className="rounded-[28px] bg-bg p-4"><CartIllustration /></div>
         </section>
 
         <section aria-label={t("landing.b1_title")} className="grid gap-4 md:grid-cols-3">
@@ -97,6 +98,8 @@ export function Landing() {
           </ol>
         </section>
 
+        <BestVendors />
+
         {cfg.data?.demo_mode && (
           <section className="mt-10">
             <h2 className="mb-3 text-2xl">{t("landing.demo_title")}</h2>
@@ -108,6 +111,7 @@ export function Landing() {
         <p>
           <strong className="text-ink">{APP_NAME}</strong> · {t("landing.footer")}
         </p>
+        <p className="mt-2"><a href="/login?role=staff" className="font-semibold text-primary underline">{t("landing.admin_link")}</a></p>
       </footer>
     </div>
   );

@@ -194,7 +194,7 @@ export function SellScreen() {
 
   return (
     <div>
-      <PageTitle>{t("sell.title")}</PageTitle>
+      <PageTitle sub={t("sell.hint")}>{t("sell.title")}</PageTitle>
       {live.closed && <p className="card-2 mb-3 p-3 font-medium">{t("sell.closed_note")}</p>}
       <div className="grid grid-cols-2 gap-3" data-testid="sell-grid">
         {live.items.map((it) => (

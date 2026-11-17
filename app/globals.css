@@ -6,38 +6,42 @@
 /* ---------- Theme tokens: Light (default), Dark, Sunlight ---------- */
 :root,
 :root[data-theme="light"] {
-  --bg: #fff8ec;
+  --bg: #f5f5f5;
   --surface: #ffffff;
-  --surface-2: #fbefd9;
-  --ink: #1b2a22;
-  --muted: #5b6b61;
-  --primary: #0e7a55;
+  --surface-2: #e8eeed;
+  --ink: #212529;
+  --muted: #566066;
+  --primary: #088178;
   --on-primary: #ffffff;
-  --primary-soft: #d9f2e6;
-  --accent: #f2a100;
-  --on-accent: #1b2a22;
-  --danger: #c8372d;
-  --border: #eadfc8;
+  --primary-soft: #d3ece9;
+  --accent: #ffc93c;
+  --on-accent: #032724;
+  --danger: #c62f2f;
+  --border: #dde3e2;
   --gut: #b8a98a;
-  --shadow: 0 6px 20px rgba(27, 42, 34, 0.08);
+  --deep: #032724;
+  --on-deep: #f5f5f5;
+  --shadow: 0 2px 12px rgba(3, 39, 36, 0.06);
   --bw: 1px;
   color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --bg: #0f1a14;
-  --surface: #16241c;
-  --surface-2: #1e3026;
-  --ink: #f4eedf;
-  --muted: #a9b8ae;
-  --primary: #3fd28f;
-  --on-primary: #06261a;
-  --primary-soft: #1c3d2d;
-  --accent: #ffc247;
-  --on-accent: #1b2a22;
-  --danger: #ff7a6b;
-  --border: #2a4034;
+  --bg: #032724;
+  --surface: #083a35;
+  --surface-2: #0e4a44;
+  --ink: #f5f5f5;
+  --muted: #a8c2be;
+  --primary: #2bc4b4;
+  --on-primary: #032724;
+  --primary-soft: #0f4a44;
+  --accent: #ffd25a;
+  --on-accent: #032724;
+  --danger: #ff8a7a;
+  --border: #14544d;
   --gut: #b8a98a;
-  --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --deep: #021a18;
+  --on-deep: #f5f5f5;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   --bw: 1px;
   color-scheme: dark;
 }
@@ -46,15 +50,17 @@
   --surface: #ffffff;
   --surface-2: #f1f1f1;
   --ink: #000000;
-  --muted: #262626;
-  --primary: #005c3e;
+  --muted: #212529;
+  --primary: #05645c;
   --on-primary: #ffffff;
-  --primary-soft: #d6efe4;
+  --primary-soft: #d3ece9;
   --accent: #ffb300;
   --on-accent: #000000;
   --danger: #a30000;
   --border: #000000;
   --gut: #7a6a45;
+  --deep: #000000;
+  --on-deep: #ffffff;
   --shadow: none;
   --bw: 2px;
   color-scheme: light;
@@ -74,6 +80,8 @@
   --color-danger: var(--danger);
   --color-line: var(--border);
   --color-gut: var(--gut);
+  --color-deep: var(--deep);
+  --color-on-deep: var(--on-deep);
   /* shadcn token aliases (existing ui/ components) */
   --color-background: var(--bg);
   --color-foreground: var(--ink);
@@ -90,8 +98,8 @@
   --color-border: var(--border);
   --color-input: var(--border);
   --color-ring: var(--primary);
-  --font-heading: var(--font-anek), var(--font-noto), system-ui, sans-serif;
-  --font-sans: var(--font-noto), var(--font-inter), system-ui, sans-serif;
+  --font-heading: "Degular Demo", "Degular", var(--font-hanken), var(--font-anek), var(--font-noto), system-ui, sans-serif;
+  --font-sans: "Degular Demo", "Degular", var(--font-hanken), var(--font-noto), system-ui, sans-serif;
   --font-num: var(--font-inter), system-ui, sans-serif;
   --radius-card: 24px;
   --radius-input: 16px;
@@ -125,6 +133,7 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   line-height: 1.6;
+  font-feature-settings: "ss01" 1;
   overflow-wrap: break-word;
   word-break: normal; /* never split Malayalam mid-word */
   min-height: 100dvh;
@@ -134,8 +143,16 @@ h2,
 h3,
 h4 {
   font-family: var(--font-heading);
-  line-height: 1.3;
-  font-weight: 700;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+/* Malayalam script keeps its own comfortable line height */
+:lang(ml) h1,
+:lang(ml) h2,
+:lang(ml) h3 {
+  line-height: 1.45;
+  letter-spacing: 0;
 }
 .num {
   font-family: var(--font-num);

@@ -5,7 +5,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { PrismaClient, type Prisma } from "@prisma/client";
 import { CATALOG } from "../shared/catalog";
-import { DEMO_ACCOUNTS, pinToPassword, vendorEmail } from "../server/config/demo";
+import { DEMO_ACCOUNTS } from "../server/config/demo";
 import { addDays, toDbDate, todayIST } from "../server/lib/dates";
 import { planItem, type HistoryDay } from "../server/services/forecast";
 import { dayMetrics } from "../server/services/money";
@@ -47,6 +47,7 @@ async function ensureUser(email: string, password: string, role: string): Promis
 
 type VendorSeed = {
   phone: string;
+  email: string;
   name: string;
   stall: StallType;
   area: string;
@@ -54,19 +55,20 @@ type VendorSeed = {
   gutDays: number;
   baseline: number[]; // per catalog item, units/day
   declared: Record<string, boolean>;
+  place: string;
 };
 
 const VENDORS: VendorSeed[] = [
-  { phone: "9000000001", name: "Suresh Kumar", stall: "fruit", area: "Ernakulam", days: 32, gutDays: 18, baseline: [14, 20, 8, 9, 7, 16], declared: { id_proof: true, vending_proof_or_lor: true, bank_or_upi: true } },
-  { phone: "9000000002", name: "Lekha Nair", stall: "tea_snacks", area: "Kochi", days: 28, gutDays: 14, baseline: [110, 45, 60, 50, 40, 0], declared: { id_proof: true, bank_or_upi: true } },
-  { phone: "9000000003", name: "Joseph Thomas", stall: "vegetable", area: "Ernakulam", days: 28, gutDays: 14, baseline: [12, 14, 12, 7, 6, 22], declared: { id_proof: true } },
+  { phone: "9000000001", email: DEMO_ACCOUNTS.vendor.identifier, name: "Suresh Kumar", stall: "fruit", area: "Ernakulam", days: 32, gutDays: 18, baseline: [14, 20, 8, 9, 7, 16], declared: { id_proof: true, vending_proof_or_lor: true, bank_or_upi: true }, place: "Near Marine Drive bus stop" },
+  { phone: "9000000002", email: "lekha@demo.cartwise.app", name: "Lekha Nair", stall: "tea_snacks", area: "Kochi", days: 28, gutDays: 14, baseline: [110, 45, 60, 50, 40, 0], declared: { id_proof: true, bank_or_upi: true }, place: "Fort Kochi beach road" },
+  { phone: "9000000003", email: "joseph@demo.cartwise.app", name: "Joseph Thomas", stall: "vegetable", area: "Ernakulam", days: 28, gutDays: 14, baseline: [12, 14, 12, 7, 6, 22], declared: { id_proof: true }, place: "Ernakulam North market gate" },
 ];
 
 const weekdayFactor = [1.25, 0.9, 0.95, 0.95, 1.0, 1.1, 1.3]; // Sun..Sat
 
 async function seedVendor(v: VendorSeed, idx: number) {
-  const id = await ensureUser(vendorEmail(v.phone), pinToPassword(DEMO_ACCOUNTS.vendor.secret), "vendor");
-  await prisma.profile.deleteMany({ where: { OR: [{ id }, { phone: v.phone }] } });
+  const id = await ensureUser(v.email, DEMO_ACCOUNTS.vendor.secret, "vendor");
+  await prisma.profile.deleteMany({ where: { OR: [{ id }, { phone: v.phone }, { email: v.email }] } });
   const cat = CATALOG[v.stall];
   await prisma.profile.create({
     data: {
@@ -74,9 +76,10 @@ async function seedVendor(v: VendorSeed, idx: number) {
       role: "vendor",
       name: v.name,
       phone: v.phone,
+      email: v.email,
       language: "ml",
       area: v.area,
-      vendor: { create: { stallType: v.stall, area: v.area, onboarded: true } },
+      vendor: { create: { stallType: v.stall, area: v.area, onboarded: true, publicListed: true, publicPhone: v.phone, publicPlace: v.place } },
     },
   });
   const items = await Promise.all(
@@ -189,17 +192,11 @@ async function main() {
   console.log("Seeding SYNTHETIC demo data...");
   for (let i = 0; i < VENDORS.length; i++) await seedVendor(VENDORS[i], i);
 
-  // officer
-  const officerId = await ensureUser(DEMO_ACCOUNTS.officer.identifier, DEMO_ACCOUNTS.officer.secret, "officer");
-  await prisma.profile.deleteMany({ where: { id: officerId } });
-  await prisma.profile.create({ data: { id: officerId, role: "officer", name: "Demo Officer", email: DEMO_ACCOUNTS.officer.identifier, language: "en", area: "Ernakulam" } });
-
-  // markets
-  const m1 = await ensureUser(DEMO_ACCOUNTS.market.identifier, DEMO_ACCOUNTS.market.secret, "market");
-  const m2 = await ensureUser("pending.market@demo.cartwise.app", "Demo-Market-2026", "market");
-  await prisma.profile.deleteMany({ where: { id: { in: [m1, m2] } } });
-  await prisma.profile.create({ data: { id: m1, role: "market", name: "Anil Wholesale", email: DEMO_ACCOUNTS.market.identifier, phone: "9000000011", area: "Ernakulam", market: { create: { marketName: "Ernakulam Wholesale Market", area: "Ernakulam", approved: true, approvedBy: officerId, approvedAt: new Date() } } } });
-  await prisma.profile.create({ data: { id: m2, role: "market", name: "Biju Traders", email: "pending.market@demo.cartwise.app", phone: "9000000012", area: "Kochi", market: { create: { marketName: "Kochi Fresh Hub", area: "Kochi", approved: false } } } });
+  // admin (replaces the former officer); remove retired market demo accounts
+  const adminId = await ensureUser(DEMO_ACCOUNTS.admin.identifier, DEMO_ACCOUNTS.admin.secret, "admin");
+  await prisma.profile.deleteMany({ where: { id: adminId } });
+  await prisma.profile.create({ data: { id: adminId, role: "admin", name: "Demo Admin", email: DEMO_ACCOUNTS.admin.identifier, language: "en", area: "Ernakulam" } });
+  const officerId = adminId;
 
   // notices
   await prisma.notice.deleteMany({});
@@ -214,21 +211,7 @@ async function main() {
     await prisma.notice.create({ data: { officerId, titleMl: n[0], titleEn: n[1], bodyMl: n[2], bodyEn: n[3], schemeTag: n[4], areaFilter: n[5], publishedAt: new Date(Date.now() - i * 86_400_000) } });
   }
 
-  // offers (approved market only), matching seeded items
-  const from = new Date(Date.now() - 86_400_000);
-  const to = new Date(Date.now() + 30 * 86_400_000);
-  const offers = [
-    ["mango", "മാങ്ങ മൊത്തവില", "Mango wholesale", 48, "kg", 500, "Ernakulam"],
-    ["banana", "ഏത്തപ്പഴം മൊത്തവില", "Banana wholesale", 32, "kg", 800, "Ernakulam"],
-    ["tomato", "തക്കാളി ഓഫർ", "Tomato offer", 24, "kg", 600, "Ernakulam"],
-    ["onion", "സവാള ഓഫർ", "Onion offer", 22, "kg", 1000, "Ernakulam"],
-    ["coconut", "തേങ്ങ മൊത്തവില", "Coconut wholesale", 24, "piece", 2000, "Ernakulam"],
-    ["tea", "ചായ പൊടി ബൾക്ക് പായ്ക്ക്", "Tea bulk pack (per cup cost)", 3, "cup", 5000, "Kochi"],
-  ] as const;
-  for (const o of offers) {
-    await prisma.offer.create({ data: { marketId: m1, categorySlug: o[0], titleMl: o[1], titleEn: o[2], price: o[3], unit: o[4], qtyAvailable: o[5], validFrom: from, validTo: to, area: o[6] } });
-  }
-  console.log("Seed done: 3 vendors, 1 officer, 2 markets, 5 notices, 6 offers.");
+  console.log("Seed done: 3 vendors (all publicly listed), 1 admin, 5 notices.");
   console.log(`Demo vendor login: ${DEMO_ACCOUNTS.vendor.identifier} / PIN ${DEMO_ACCOUNTS.vendor.secret}`);
 }
 

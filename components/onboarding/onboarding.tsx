@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { TopBar } from "@/components/cw/shell";
 import { Button, Field, Input, ListSkeleton } from "@/components/cw/ui";
 import { ItemEmoji } from "@/components/cw/widgets";
+import { AreaField } from "@/components/cw/area-field";
 import { api } from "@/lib/api/client";
 import { useI18n } from "@/lib/i18n";
 import { catalogFor, KERALA_AREAS } from "@/shared/catalog";
@@ -134,12 +135,7 @@ export function Onboarding() {
               <section className="space-y-5">
                 <h1 className="text-3xl">{t("onb.area_title")}</h1>
                 <Field label={t("onb.name")} htmlFor="vname"><Input id="vname" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" /></Field>
-                <Field label={t("auth.area")} htmlFor="varea"><Input id="varea" value={area} onChange={(e) => setArea(e.target.value)} /></Field>
-                <div className="flex flex-wrap gap-2">
-                  {KERALA_AREAS.map((a) => (
-                    <button key={a} type="button" onClick={() => setArea(a)} aria-pressed={area === a} className={cn("btn-press min-h-11 rounded-full border-[length:var(--bw)] border-line px-4 font-semibold", area === a ? "bg-primary text-on-primary" : "bg-surface")}>{a}</button>
-                  ))}
-                </div>
+                <AreaField id="varea" value={area} onChange={setArea} showChips />
                 {err && <p role="alert" className="font-medium text-danger">{err}</p>}
               </section>
             )}

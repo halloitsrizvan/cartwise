@@ -33,21 +33,20 @@ export const useBeforeAfter = () => q<T.BeforeAfter>(["before-after"], "/api/v1/
 export const useStatement = () => q<T.Statement>(["statement"], "/api/v1/passport");
 export const useReadiness = () => q<T.Readiness>(["readiness"], "/api/v1/passport/readiness");
 export const useShares = () => q<T.ShareLinkRow[]>(["shares"], "/api/v1/passport/share");
-export const useOffers = () => q<T.OfferCard[]>(["offers"], "/api/v1/offers");
 export const useNotices = () => q<T.NoticeRow[]>(["notices"], "/api/v1/notices");
 export const usePublicStatement = (token: string) => q<T.PublicStatement>(["public", token], `/api/v1/public/passport/${token}`);
 
-export const officer = {
-  useOverview: () => q<T.OfficerOverview>(["o-overview"], "/api/v1/officer/overview"),
-  useNotices: () => q<T.NoticeRow[]>(["o-notices"], "/api/v1/officer/notices"),
-  useVendors: () => q<T.OfficerVendor[]>(["o-vendors"], "/api/v1/officer/vendors"),
-  useSummary: (id: string | null) => q<T.AppSummary>(["o-summary", id], `/api/v1/officer/vendors/${id}/application-summary`, { enabled: !!id }),
-  useMarkets: () => q<T.MarketRow[]>(["o-markets"], "/api/v1/officer/markets"),
+export const admin = {
+  useOverview: () => q<T.AdminOverview>(["a-overview"], "/api/v1/admin/overview"),
+  useNotices: () => q<T.NoticeRow[]>(["a-notices"], "/api/v1/admin/notices"),
+  useVendors: () => q<T.AdminVendor[]>(["a-vendors"], "/api/v1/admin/vendors"),
+  useSummary: (id: string | null) => q<T.AppSummary>(["a-summary", id], `/api/v1/admin/vendors/${id}/application-summary`, { enabled: !!id }),
 };
-export const market = {
-  useStats: () => q<T.MarketStats>(["m-stats"], "/api/v1/market/stats"),
-  useOffers: () => q<T.MarketOffer[]>(["m-offers"], "/api/v1/market/offers"),
+export const usePublicVendors = (params: { area?: string; stall?: string; q?: string; limit?: number }) => {
+  const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => [k, String(v)])).toString();
+  return q<T.PublicVendor[]>(["public-vendors", qs], `/api/v1/public/vendors${qs ? "?" + qs : ""}`);
 };
+export const usePublicVendor = (id: string) => q<T.PublicVendorProfile>(["public-vendor", id], `/api/v1/public/vendors/${id}`);
 
 /** Generic mutation helper that invalidates the given query-key prefixes. */
 export function useApiMutation<B, R = unknown>(fn: (body: B) => Promise<R>, invalidate: QueryKey[] = [], onOk?: (r: R) => void) {

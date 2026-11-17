@@ -11,10 +11,10 @@ datasource db {
 }
 
 enum Role {
-  @@map("user_role")
   vendor
-  officer
-  market
+  admin
+
+  @@map("user_role")
 }
 
 enum Lang {
@@ -41,13 +41,6 @@ enum DayStatus {
   closed
 }
 
-enum OfferStatus {
-  active
-  expired
-  reported
-  removed
-}
-
 enum RegStatus {
   draft
   submitted
@@ -67,7 +60,6 @@ model Profile {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   vendor Vendor?
-  market Market?
 
   @@index([role])
   @@map("profiles")
@@ -78,6 +70,9 @@ model Vendor {
   stallType StallType @map("stall_type")
   area      String
   onboarded Boolean   @default(false)
+  publicListed Boolean @default(false) @map("public_listed")
+  publicPhone  String?  @map("public_phone")
+  publicPlace  String?  @map("public_place")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
@@ -85,11 +80,11 @@ model Vendor {
   items         Item[]
   dayLogs       DayLog[]
   plans         Plan[]
-  offerViews    OfferView[]
   noticeReads   NoticeRead[]
   shareLinks    ShareLink[]
   registrations Registration[]
 
+  @@index([publicListed])
   @@map("vendors")
 }
 
@@ -213,63 +208,6 @@ model PlanActual {
   @@id([planId, itemId])
   @@index([itemId])
   @@map("plan_actuals")
-}
-
-model Market {
-  profileId  String    @id @map("profile_id") @db.Uuid
-  marketName String    @map("market_name")
-  area       String
-  approved   Boolean   @default(false)
-  approvedBy String?   @map("approved_by") @db.Uuid
-  approvedAt DateTime? @map("approved_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  offers  Offer[]
-
-  @@map("markets")
-}
-
-model Offer {
-  id           String      @id @default(uuid()) @db.Uuid
-  marketId     String      @map("market_id") @db.Uuid
-  categorySlug String      @map("category_slug")
-  titleMl      String      @map("title_ml")
-  titleEn      String      @map("title_en")
-  price        Float
-  unit         Unit
-  qtyAvailable Float       @map("qty_available")
-  validFrom    DateTime    @map("valid_from")
-  validTo      DateTime    @map("valid_to")
-  area         String
-  status       OfferStatus @default(active)
-  reportCount  Int         @default(0) @map("report_count")
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
-
-  market Market      @relation(fields: [marketId], references: [profileId], onDelete: Cascade)
-  views  OfferView[]
-
-  @@index([marketId])
-  @@index([categorySlug, area])
-  @@map("offers")
-}
-
-model OfferView {
-  id        String   @id @default(uuid()) @db.Uuid
-  offerId   String   @map("offer_id") @db.Uuid
-  vendorId  String   @map("vendor_id") @db.Uuid
-  seenAt    DateTime @default(now()) @map("seen_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  offer  Offer  @relation(fields: [offerId], references: [id], onDelete: Cascade)
-  vendor Vendor @relation(fields: [vendorId], references: [profileId], onDelete: Cascade)
-
-  @@unique([offerId, vendorId])
-  @@index([vendorId])
-  @@map("offer_views")
 }
 
 model Notice {

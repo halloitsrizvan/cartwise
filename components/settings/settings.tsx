@@ -5,21 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button, Card, ErrorState, Field, Input, ListSkeleton, PageTitle } from "@/components/cw/ui";
+import { Button, Card, ErrorState, Field, Input, ListSkeleton, PageTitle, Toggle } from "@/components/cw/ui";
 import { ItemEmoji } from "@/components/cw/widgets";
 import { api } from "@/lib/api/client";
 import { patch, post, useItems, useVendor } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
 import { useTheme, type SizePref, type ThemePref } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-import { BarChart3, Bell, ChevronRight, Settings, ShieldCheck, Tag } from "lucide-react";
+import { BarChart3, Bell, ChevronRight, Settings, ShieldCheck } from "lucide-react";
 import type { ItemDTO } from "@/shared/schemas/domain";
 
 export function MoreScreen() {
   const { t } = useI18n();
   const links = [
     { href: "/app/passport", label: t("more.passport"), icon: ShieldCheck },
-    { href: "/app/offers", label: t("more.offers"), icon: Tag },
     { href: "/app/notices", label: t("more.notices"), icon: Bell },
     { href: "/app/money", label: t("money.title"), icon: BarChart3 },
     { href: "/app/settings", label: t("more.settings"), icon: Settings },
@@ -90,15 +89,51 @@ function ItemRow({ item }: { item: ItemDTO }) {
   );
 }
 
+function PublicListing() {
+  const { t } = useI18n();
+  const vendor = useVendor();
+  const qc = useQueryClient();
+  const [phone, setPhone] = useState<string | null>(null);
+  const [place, setPlace] = useState<string | null>(null);
+  if (!vendor.data) return null;
+  const v = vendor.data;
+  const save = async (body: Record<string, unknown>) => {
+    try {
+      await patch("/api/v1/vendors/me", body);
+      toast(t("listing.saved"));
+      qc.invalidateQueries({ queryKey: ["vendor"] });
+    } catch {
+      toast.error(t("err.PHONE_INVALID"));
+    }
+  };
+  const ph = phone ?? v.public_phone ?? "";
+  const pl = place ?? v.public_place ?? "";
+  return (
+    <Card className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-xl">{t("listing.title")}</h2>
+        <Toggle checked={v.public_listed} onChange={(on) => save({ public_listed: on })} label={t("listing.title")} />
+      </div>
+      <p className="text-muted">{t("listing.hint")}</p>
+      {v.public_listed && (
+        <>
+          <Field label={t("listing.phone")} htmlFor="pub-phone"><Input id="pub-phone" type="tel" inputMode="numeric" maxLength={10} value={ph} onChange={(e) => setPhone(e.target.value.replace(/D/g, ""))} /></Field>
+          <Field label={t("listing.place")} htmlFor="pub-place"><Input id="pub-place" value={pl} onChange={(e) => setPlace(e.target.value)} /></Field>
+          <Button className="w-full" onClick={() => save({ public_phone: ph || null, public_place: pl.trim() || null })}>{t("common.save")}</Button>
+        </>
+      )}
+    </Card>
+  );
+}
+
 export function SettingsScreen() {
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme, size, setSize } = useTheme();
   const items = useItems();
-  const vendor = useVendor();
   const qc = useQueryClient();
   const router = useRouter();
-  const [pin, setPin] = useState({ cur: "", next: "" });
-  const [pinErr, setPinErr] = useState("");
+  const [pw, setPw] = useState({ cur: "", next: "" });
+  const [pwErr, setPwErr] = useState("");
 
   const changeLang = (l: "ml" | "en") => {
     setLang(l);
@@ -109,15 +144,15 @@ export function SettingsScreen() {
     qc.invalidateQueries({ queryKey: ["items"] });
     qc.invalidateQueries({ queryKey: ["today"] });
   };
-  const changePin = async () => {
-    setPinErr("");
-    if (!/^\d{4,6}$/.test(pin.cur) || !/^\d{4,6}$/.test(pin.next)) return setPinErr(t("err.PIN_INVALID"));
+  const changePassword = async () => {
+    setPwErr("");
+    if (pw.next.length < 8) return setPwErr(t("err.PASSWORD_SHORT"));
     try {
-      await post("/api/v1/auth/pin", { current_pin: pin.cur, new_pin: pin.next });
-      setPin({ cur: "", next: "" });
+      await post("/api/v1/auth/password", { current_password: pw.cur, new_password: pw.next });
+      setPw({ cur: "", next: "" });
       toast(t("settings.pin_changed"));
     } catch {
-      setPinErr(t("err.UNAUTHORIZED"));
+      setPwErr(t("err.UNAUTHORIZED"));
     }
   };
   const logout = async () => {
@@ -138,6 +173,8 @@ export function SettingsScreen() {
         <Segmented<SizePref> label={t("settings.size")} value={size} onChange={setSize} options={[{ v: "normal", label: t("settings.size_normal") }, { v: "large", label: t("settings.size_large") }, { v: "xl", label: t("settings.size_xl") }]} />
       </Card>
 
+      <PublicListing />
+
       <section>
         <h2 className="mb-3 text-2xl">{t("settings.items")}</h2>
         {items.isPending ? <ListSkeleton rows={3} h="h-36" /> : items.isError ? <ErrorState onRetry={() => items.refetch()} /> : (
@@ -146,14 +183,12 @@ export function SettingsScreen() {
         <Button variant="outline" className="mt-3 w-full" onClick={addItem}><Plus className="size-5" aria-hidden /> {t("onb.add_item")}</Button>
       </section>
 
-      {vendor.data?.phone && (
-        <Card className="space-y-3">
-          <h2 className="text-xl">{t("settings.pin")}</h2>
-          <Field label={t("settings.pin_current")} htmlFor="pin-cur"><Input id="pin-cur" type="password" inputMode="numeric" maxLength={6} value={pin.cur} onChange={(e) => setPin({ ...pin, cur: e.target.value.replace(/\D/g, "") })} /></Field>
-          <Field label={t("settings.pin_new")} htmlFor="pin-new" error={pinErr}><Input id="pin-new" type="password" inputMode="numeric" maxLength={6} value={pin.next} onChange={(e) => setPin({ ...pin, next: e.target.value.replace(/\D/g, "") })} /></Field>
-          <Button className="w-full" onClick={changePin}>{t("settings.pin")}</Button>
-        </Card>
-      )}
+      <Card className="space-y-3">
+        <h2 className="text-xl">{t("settings.pin")}</h2>
+        <Field label={t("settings.pin_current")} htmlFor="pw-cur"><Input id="pw-cur" type="password" autoComplete="current-password" value={pw.cur} onChange={(e) => setPw({ ...pw, cur: e.target.value })} /></Field>
+        <Field label={t("settings.pin_new")} htmlFor="pw-new" error={pwErr}><Input id="pw-new" type="password" autoComplete="new-password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></Field>
+        <Button className="w-full" onClick={changePassword}>{t("settings.pin")}</Button>
+      </Card>
 
       <Button variant="outline" size="lg" className="w-full" onClick={logout}><LogOut className="size-5" aria-hidden /> {t("common.logout")}</Button>
     </div>

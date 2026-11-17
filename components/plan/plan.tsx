@@ -130,7 +130,10 @@ export function PlanScreen({ day = "tomorrow" }: { day?: "tomorrow" | "today" })
   return (
     <div className="pb-28">
       <div className="mb-3 flex items-start justify-between gap-3">
-        <h1 className="text-3xl" data-testid="plan-title">{title}</h1>
+        <div>
+          <h1 className="text-3xl" data-testid="plan-title">{title}</h1>
+          <p className="text-muted">{t("plan.hint")}</p>
+        </div>
         <Button variant={playing ? "danger" : "soft"} size="sm" onClick={play} aria-label={playing ? t("plan.stop") : t("plan.play")} data-testid="plan-play">
           {playing ? <Square className="size-5" aria-hidden /> : <Play className="size-5" aria-hidden />}
           {playing ? t("plan.stop") : t("plan.play")}

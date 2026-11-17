@@ -34,14 +34,15 @@ import { DELETE as voidSale } from "@/app/api/v1/day/sales/[id]/route";
 import { POST as addSales } from "@/app/api/v1/day/sales/route";
 import { GET as listItems } from "@/app/api/v1/items/route";
 import { PATCH as patchItem } from "@/app/api/v1/items/[id]/route";
-import { POST as postOffer } from "@/app/api/v1/market/offers/route";
-import { GET as officerOverview } from "@/app/api/v1/officer/overview/route";
+import { GET as adminOverview } from "@/app/api/v1/admin/overview/route";
+import { GET as publicVendors } from "@/app/api/v1/public/vendors/route";
+import { GET as publicVendor } from "@/app/api/v1/public/vendors/[id]/route";
 import { POST as createShare } from "@/app/api/v1/passport/share/route";
 import { DELETE as revokeShare } from "@/app/api/v1/passport/share/[id]/route";
 import { GET as publicPassport } from "@/app/api/v1/public/passport/[token]/route";
 
 const tag = randomUUID().slice(0, 8);
-const ids = { a: randomUUID(), b: randomUUID(), market: randomUUID(), officer: randomUUID() };
+const ids = { a: randomUUID(), b: randomUUID(), admin: randomUUID() };
 let itemA = "";
 let itemB = "";
 let saleB = "";
@@ -60,8 +61,7 @@ beforeAll(async () => {
   itemB = (await mk(ids.b, "B-mango")).id;
   const day = await prisma.dayLog.create({ data: { vendorId: ids.b, date: toDbDate(todayIST()) } });
   saleB = (await prisma.saleEvent.create({ data: { dayLogId: day.id, itemId: itemB, qty: 3, ts: new Date(), clientId: `b-${tag}` } })).id;
-  await prisma.profile.create({ data: { id: ids.market, role: "market", name: "M", email: `m-${tag}@test.local`, market: { create: { marketName: `Mkt ${tag}`, area: "TestArea", approved: false } } } });
-  await prisma.profile.create({ data: { id: ids.officer, role: "officer", name: "O", email: `o-${tag}@test.local` } });
+  await prisma.profile.create({ data: { id: ids.admin, role: "admin", name: "Admin", email: `a-${tag}@test.local` } });
 });
 
 afterAll(async () => {
@@ -75,10 +75,13 @@ describe("authentication and roles", () => {
     auth.current = null;
     expect((await listItems(req("GET"))).status).toBe(401);
   });
-  it("rejects a vendor on officer and market routes with 403", async () => {
+  it("rejects a vendor on admin routes with 403", async () => {
     as(ids.a, "vendor");
-    expect((await officerOverview(req("GET"))).status).toBe(403);
-    expect((await postOffer(req("POST", {}))).status).toBe(403);
+    expect((await adminOverview(req("GET"))).status).toBe(403);
+  });
+  it("lets an admin in", async () => {
+    as(ids.admin, "admin");
+    expect((await adminOverview(req("GET"))).status).toBe(200);
   });
 });
 
@@ -121,13 +124,22 @@ describe("vendor ownership", () => {
   });
 });
 
-describe("market approval", () => {
-  it("a market that is not approved gets 403 on POST market/offers", async () => {
-    as(ids.market, "market");
-    const offer = { category_slug: "mango", title_ml: "മാങ്ങ", title_en: "Mango", price: 40, unit: "kg", qty_available: 100, valid_from: new Date().toISOString(), valid_to: new Date(Date.now() + 86_400_000).toISOString(), area: "TestArea" };
-    expect((await postOffer(req("POST", offer))).status).toBe(403);
-    await prisma.market.update({ where: { profileId: ids.market }, data: { approved: true } });
-    expect((await postOffer(req("POST", offer))).status).toBe(201);
+describe("public vendor directory", () => {
+  const q = (qs = "") => new Request(`http://localhost/api/v1/public/vendors?${qs}`, { headers: { "x-forwarded-for": `test-${tag}` } });
+  it("hides vendors until they opt in, then lists first name only with no income or phone", async () => {
+    auth.current = null;
+    const before = await (await publicVendors(q("q=Test"))).json();
+    expect(before.data.find((v: { id: string }) => v.id === ids.a)).toBeUndefined();
+    expect((await publicVendor(req("GET"), ctx({ id: ids.a }))).status).toBe(404);
+    await prisma.vendor.update({ where: { profileId: ids.a }, data: { publicListed: true, publicPlace: "Test corner" } });
+    const after = await (await publicVendors(q("q=Test"))).json();
+    const hit = after.data.find((v: { id: string }) => v.id === ids.a);
+    expect(hit.first_name).toBe("Test");
+    const blob = JSON.stringify(hit);
+    expect(blob).not.toMatch(/profit|income|phone|8d{9}/i);
+    const prof = await publicVendor(req("GET"), ctx({ id: ids.a }));
+    expect(prof.status).toBe(200);
+    expect((await prof.json()).data.phone).toBeNull();
   });
 });
 
