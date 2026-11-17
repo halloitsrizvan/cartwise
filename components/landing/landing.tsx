@@ -80,7 +80,6 @@ export function Landing() {
           <div aria-hidden className="pointer-events-none absolute -right-24 top-10 size-[28rem] rounded-full bg-primary/10 blur-3xl" />
           <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 md:px-8 lg:grid-cols-[1.05fr_1fr]">
             <div className="space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full bg-surface px-4 py-1.5 text-sm font-bold text-primary shadow-sm"><BadgeCheck className="size-4" aria-hidden /> {t("landing.eyebrow")}</span>
               <h1 className="text-[2.1rem] leading-[1.15] sm:text-5xl md:text-7xl">
                 {t("landing.h1_a")}<br />
                 <span className="relative inline-block text-primary">

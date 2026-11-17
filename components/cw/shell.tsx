@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n";
 import { onOpApplied, onSyncFailure, onSynced, startSync, useSyncState } from "@/lib/offline/queue";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
+import { LogoutButton } from "./logout-button";
 import { ButtonLink, Chip, ListSkeleton } from "./ui";
 
 export function LangToggle() {
@@ -163,8 +164,8 @@ export function VendorShell({ children }: { children: ReactNode }) {
       <TopBar />
       <div className="flex flex-1">
         {/* desktop: navigation lives in a left panel */}
-        <aside className="no-print sticky top-[3.6rem] hidden h-[calc(100dvh-3.6rem)] w-64 shrink-0 overflow-y-auto border-r-[length:var(--bw)] border-line bg-surface p-4 md:block">
-          <nav aria-label={t("nav.main")}>
+        <aside className="no-print sticky top-[3.6rem] hidden h-[calc(100dvh-3.6rem)] w-64 shrink-0 flex-col overflow-y-auto border-r-[length:var(--bw)] border-line bg-surface p-4 md:flex">
+          <nav aria-label={t("nav.main")} className="flex-1">
             <ul className="space-y-1.5">
               {SIDE_LINKS.map((l) => {
                 const active = isActive(l.href, "exact" in l ? l.exact : false);
@@ -179,6 +180,9 @@ export function VendorShell({ children }: { children: ReactNode }) {
               })}
             </ul>
           </nav>
+          <div className="mt-4 border-t-[length:var(--bw)] border-line pt-3">
+            <LogoutButton variant="side" />
+          </div>
         </aside>
         <main id="main" className="mx-auto w-full max-w-2xl min-w-0 flex-1 px-4 pb-32 pt-4 md:pb-12">
           {ready || me.isError ? children : <ListSkeleton rows={3} />}
@@ -216,24 +220,12 @@ const ADMIN_NAV: NavItem[] = [
 export function SideShell({ role, children }: { role: "admin"; children: ReactNode }) {
   const me = useRoleGuard(role);
   const path = usePathname();
-  const router = useRouter();
   const { t } = useI18n();
   const nav = ADMIN_NAV;
-  const qc = useQueryClient();
-  const logout = async () => {
-    await post("/api/v1/auth/logout").catch(() => {});
-    qc.clear();
-    router.replace("/login");
-  };
   return (
     <div className="flex min-h-dvh flex-col">
       <TopBar
-        right={
-          <button type="button" onClick={logout} aria-label={t("common.logout")} className="btn-press inline-flex min-h-11 items-center gap-1.5 rounded-full border-[length:var(--bw)] border-line bg-surface px-3 font-semibold">
-            <LogOut className="size-5" aria-hidden />
-            <span className="hidden sm:inline">{t("common.logout")}</span>
-          </button>
-        }
+        right={<LogoutButton variant="bar" />}
       />
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 px-4 py-4 md:flex-row">
         <nav aria-label={t("nav.main")} className="md:w-60 md:shrink-0">

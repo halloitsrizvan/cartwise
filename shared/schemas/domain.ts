@@ -154,6 +154,8 @@ export const ChatSchema = z.strictObject({
     .max(12),
 });
 
+export const PlanSummarySchema = z.strictObject({ day: z.enum(["today", "tomorrow"]).default("tomorrow"), lang: LangSchema });
+
 export type PlanLine = {
   demand?: number;
   item_id: string;

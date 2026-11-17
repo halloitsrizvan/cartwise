@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { InstallCard } from "@/components/cw/install-card";
+import { LogoutButton } from "@/components/cw/logout-button";
 import { Button, Card, ErrorState, Field, Input, ListSkeleton, PageTitle, Toggle } from "@/components/cw/ui";
 import { ItemEmoji } from "@/components/cw/widgets";
 import { api } from "@/lib/api/client";
@@ -155,11 +156,6 @@ export function SettingsScreen() {
       setPwErr(t("err.UNAUTHORIZED"));
     }
   };
-  const logout = async () => {
-    await post("/api/v1/auth/logout").catch(() => {});
-    qc.clear();
-    router.replace("/login");
-  };
 
   return (
     <div className="space-y-6">
@@ -190,7 +186,7 @@ export function SettingsScreen() {
         <Button className="w-full" onClick={changePassword}>{t("settings.pin")}</Button>
       </Card>
 
-      <Button variant="outline" size="lg" className="w-full" onClick={logout}><LogOut className="size-5" aria-hidden /> {t("common.logout")}</Button>
+      <LogoutButton variant="full" />
     </div>
   );
 }

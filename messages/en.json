@@ -541,5 +541,10 @@
   "chat.q3": "How do I prove my income for a loan?",
   "chat.q4": "How did my last 7 days go?",
   "chat.unavailable": "The assistant is not available right now. Please try again in a moment.",
-  "chat.offline": "The assistant needs the internet."
+  "chat.offline": "The assistant needs the internet.",
+  "plan.preparing": "Preparing...",
+  "plan.summary_title": "Voice summary",
+  "logout.title": "Log out?",
+  "logout.body": "You will need your email and password to sign in again.",
+  "logout.pending": "{n} saved entries are not sent yet. They stay on this phone and send after you log in again."
 }

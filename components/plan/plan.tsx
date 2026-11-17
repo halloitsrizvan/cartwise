@@ -40,19 +40,31 @@ function usePlanFor(day: "tomorrow" | "today") {
   return day === "today" ? today : tomorrow;
 }
 
-function speak(text: string, onEnd: () => void): boolean {
-  if (typeof speechSynthesis === "undefined") return false;
-  const voices = speechSynthesis.getVoices();
-  const v = voices.find((x) => x.lang.toLowerCase().startsWith("ml"));
-  if (!v) return false;
+async function pickVoice(lang: "ml" | "en"): Promise<SpeechSynthesisVoice | null> {
+  if (typeof speechSynthesis === "undefined") return null;
+  const find = () => speechSynthesis.getVoices().find((x) => x.lang.toLowerCase().startsWith(lang));
+  let v = find();
+  if (!v) {
+    // Chrome loads voices asynchronously
+    await new Promise<void>((resolve) => {
+      const done = () => resolve();
+      speechSynthesis.addEventListener("voiceschanged", done, { once: true });
+      setTimeout(done, 1200);
+    });
+    v = find();
+  }
+  return v ?? null;
+}
+
+function speak(text: string, voice: SpeechSynthesisVoice, onEnd: () => void) {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.voice = v;
-  u.lang = v.lang;
+  u.voice = voice;
+  u.lang = voice.lang;
+  u.rate = 0.95;
   u.onend = onEnd;
   u.onerror = onEnd;
   speechSynthesis.speak(u);
-  return true;
 }
 
 export function PlanScreen({ day = "tomorrow" }: { day?: "tomorrow" | "today" }) {
@@ -61,6 +73,8 @@ export function PlanScreen({ day = "tomorrow" }: { day?: "tomorrow" | "today" })
   const q = usePlanFor(day);
   const [local, setLocal] = useState<Record<string, number>>({});
   const [playing, setPlaying] = useState(false);
+  const [preparing, setPreparing] = useState(false);
+  const [summary, setSummary] = useState<{ key: string; text: string } | null>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
@@ -113,16 +127,38 @@ export function PlanScreen({ day = "tomorrow" }: { day?: "tomorrow" | "today" })
     }
   };
 
-  const play = () => {
+  /** Read aloud: an LLM summarises this page into a short script, then the browser voice plays it. */
+  const play = async () => {
     if (playing) {
       speechSynthesis.cancel();
       setPlaying(false);
       return;
     }
-    const text = [t("plan.speak_intro"), ...plan.lines.map((l) => t("plan.speak_line", { name: l.item.name_ml, qty: fmtQty(qty(l)), unit: t(`unit.${l.item.unit}`) }))].join(" ");
-    const ok = speak(text, () => setPlaying(false));
-    if (ok) setPlaying(true);
-    else toast(t("plan.no_voice"));
+    if (preparing) return;
+    setPreparing(true);
+    try {
+      const key = `${day}|${lang}|${plan.generated_at}|${plan.lines.map((l) => l.chosen_qty).join(",")}|${plan.context.rain}${plan.context.festival}${plan.context.payday_week}`;
+      let text = summary?.key === key ? summary.text : "";
+      if (!text) {
+        try {
+          const r = await post<{ text: string }>("/api/v1/plan/summary", { day, lang });
+          text = r.text;
+        } catch {
+          // fallback: simple template from the page data
+          text = [t("plan.speak_intro"), ...plan.lines.map((l) => t("plan.speak_line", { name: lang === "ml" ? l.item.name_ml : l.item.name_en, qty: fmtQty(qty(l)), unit: t(`unit.${l.item.unit}`) }))].join(" ");
+        }
+        setSummary({ key, text });
+      }
+      const voice = await pickVoice(lang);
+      if (!voice) {
+        toast(t("plan.no_voice")); // the summary stays visible as text
+        return;
+      }
+      speak(text, voice, () => setPlaying(false));
+      setPlaying(true);
+    } finally {
+      setPreparing(false);
+    }
   };
 
   const title = day === "today" ? t("plan.today_title") : t("plan.title", { day: t(`wd.${plan.weekday}`) });
@@ -134,9 +170,9 @@ export function PlanScreen({ day = "tomorrow" }: { day?: "tomorrow" | "today" })
           <h1 className="text-3xl" data-testid="plan-title">{title}</h1>
           <p className="text-muted">{t("plan.hint")}</p>
         </div>
-        <Button variant={playing ? "danger" : "soft"} size="sm" onClick={play} aria-label={playing ? t("plan.stop") : t("plan.play")} data-testid="plan-play">
-          {playing ? <Square className="size-5" aria-hidden /> : <Play className="size-5" aria-hidden />}
-          {playing ? t("plan.stop") : t("plan.play")}
+        <Button variant={playing ? "danger" : "soft"} size="sm" onClick={play} loading={preparing} aria-label={playing ? t("plan.stop") : t("plan.play")} data-testid="plan-play">
+          {!preparing && (playing ? <Square className="size-5" aria-hidden /> : <Play className="size-5" aria-hidden />)}
+          {preparing ? t("plan.preparing") : playing ? t("plan.stop") : t("plan.play")}
         </Button>
       </div>
 
@@ -154,6 +190,13 @@ export function PlanScreen({ day = "tomorrow" }: { day?: "tomorrow" | "today" })
         <p className="text-lg font-semibold opacity-90">{t("plan.expected")}</p>
         <CountUp value={profit} prefix="₹" className="text-6xl font-extrabold" />
       </Card>
+
+      {summary && (
+        <Card className="mb-4 space-y-1 !bg-primary-soft" data-testid="plan-summary">
+          <p className="text-sm font-bold uppercase tracking-wide text-muted">{t("plan.summary_title")}</p>
+          <p className="text-lg leading-relaxed">{summary.text}</p>
+        </Card>
+      )}
 
       <ul className="space-y-4" data-testid="plan-list">
         {plan.lines.map((l) => {

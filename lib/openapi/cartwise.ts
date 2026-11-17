@@ -60,6 +60,7 @@ reg("post", "/api/v1/day/close", "Day", V, "Close the day in one transaction (ro
 
 reg("get", "/api/v1/plan/tomorrow", "Plan", V, "Tomorrow's buy plan (generated if missing)");
 reg("get", "/api/v1/plan/today", "Plan", V, "Today's plan");
+reg("post", "/api/v1/plan/summary", "Plan", V, "Spoken summary script of the plan page (LLM). The browser reads it aloud. Rate limited", { body: S.PlanSummarySchema });
 reg("post", "/api/v1/plan/override", "Plan", V, "Override the recommended quantity of one item", { body: S.OverrideSchema });
 
 reg("get", "/api/v1/money/summary", "Money", V, "Profit, waste and missed sales for 7 or 30 days", { query: S.RangeQuery });
