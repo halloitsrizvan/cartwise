@@ -99,7 +99,7 @@ export function SellScreen() {
 
   if (live.isPending) return <ListSkeleton rows={4} h="h-36" />;
   if (live.isError) return <ErrorState onRetry={() => live.refetch()} />;
-  if (!live.items.length) return <EmptyState title={t("sell.empty")} body={t("sell.empty_body")} action={<ButtonLink href="/app/settings">{t("more.settings")}</ButtonLink>} />;
+  if (!live.items.length) return <EmptyState title={t("sell.empty")} body={t("sell.empty_body")} action={<ButtonLink href="/app/products">{t("products.add")}</ButtonLink>} />;
 
   return (
     <div className="pb-44">

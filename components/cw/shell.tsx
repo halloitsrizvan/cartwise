@@ -1,6 +1,6 @@
 "use client";
 import { useQueryClient } from "@tanstack/react-query";
-import { Bell, Settings, ShieldCheck, UserRound, CloudOff, CloudUpload, Home, Languages, LogOut, MoreHorizontal, ShoppingBasket, Wallet, ClipboardList, FileText, LayoutDashboard } from "lucide-react";
+import { Bell, Package, Settings, ShieldCheck, UserRound, CloudOff, CloudUpload, Home, Languages, LogOut, MoreHorizontal, ShoppingBasket, Wallet, ClipboardList, FileText, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
@@ -147,6 +147,7 @@ const SIDE_LINKS = [
   { href: "/app/sell", key: "nav.sell", icon: ShoppingBasket },
   { href: "/app/plan", key: "nav.plan", icon: ClipboardList },
   { href: "/app/money", key: "nav.money", icon: Wallet },
+  { href: "/app/products", key: "nav.products", icon: Package },
   { href: "/app/passport", key: "more.passport", icon: ShieldCheck },
   { href: "/app/notices", key: "more.notices", icon: Bell },
   { href: "/app/settings", key: "more.settings", icon: Settings },

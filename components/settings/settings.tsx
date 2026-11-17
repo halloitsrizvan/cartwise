@@ -12,7 +12,7 @@ import { patch, post, useItems, useVendor } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
 import { useTheme, type SizePref, type ThemePref } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-import { BarChart3, Bell, ChevronRight, Settings, ShieldCheck } from "lucide-react";
+import { BarChart3, Bell, Package, ChevronRight, Settings, ShieldCheck } from "lucide-react";
 import type { ItemDTO } from "@/shared/schemas/domain";
 
 export function MoreScreen() {
@@ -21,6 +21,7 @@ export function MoreScreen() {
     { href: "/app/passport", label: t("more.passport"), icon: ShieldCheck },
     { href: "/app/notices", label: t("more.notices"), icon: Bell },
     { href: "/app/money", label: t("money.title"), icon: BarChart3 },
+    { href: "/app/products", label: t("products.title"), icon: Package },
     { href: "/app/settings", label: t("more.settings"), icon: Settings },
   ];
   return (
@@ -50,47 +51,6 @@ function Segmented<T extends string>({ value, options, onChange, label }: { valu
         </button>
       ))}
     </div>
-  );
-}
-
-function ItemRow({ item }: { item: ItemDTO }) {
-  const { t, lang } = useI18n();
-  const qc = useQueryClient();
-  const [buy, setBuy] = useState(String(item.buy_price));
-  const [sell, setSell] = useState(String(item.sell_price));
-  const shown = lang === "ml" ? item.name_ml : item.name_en;
-  const [nm, setNm] = useState(shown);
-  const dirty = Number(buy) !== item.buy_price || Number(sell) !== item.sell_price || nm.trim() !== shown;
-  const save = async () => {
-    const b = Number(buy);
-    const s = Number(sell);
-    if (!(b >= 0) || !(s > 0)) return toast.error(t("err.PRICE_INVALID"));
-    const n = nm.trim();
-    if (!n) return toast.error(t("err.REQUIRED"));
-    const names = n === shown ? {} : item.category_slug === "other" ? { name_ml: n, name_en: n } : lang === "ml" ? { name_ml: n } : { name_en: n };
-    await patch(`/api/v1/items/${item.id}`, { buy_price: b, sell_price: s, ...names });
-    toast(t("settings.saved"));
-    qc.invalidateQueries({ queryKey: ["items"] });
-    qc.invalidateQueries({ queryKey: ["today"] });
-  };
-  const hide = async () => {
-    await api(`/api/v1/items/${item.id}`, { method: "DELETE" });
-    qc.invalidateQueries({ queryKey: ["items"] });
-    qc.invalidateQueries({ queryKey: ["today"] });
-  };
-  return (
-    <li className="card space-y-3 p-4">
-      <div className="flex items-center gap-3">
-        <ItemEmoji emoji={item.emoji} name={item.name_en} className="text-4xl" />
-        <Input aria-label={t("onb.item_name")} className="flex-1 !min-h-12 text-lg font-bold" value={nm} maxLength={60} onChange={(e) => setNm(e.target.value)} />
-        <button type="button" onClick={hide} aria-label={`${t("settings.hide_item")}: ${item.name_en}`} className="btn-press tap-target grid place-items-center rounded-full hover:bg-surface-2"><EyeOff className="size-6" aria-hidden /></button>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <label className="text-sm font-semibold text-muted">{t("settings.buy_price")} (₹/{t(`unit.${item.unit}`)})<Input inputMode="decimal" className="num mt-1" value={buy} onChange={(e) => setBuy(e.target.value.replace(/[^0-9.]/g, ""))} /></label>
-        <label className="text-sm font-semibold text-muted">{t("settings.sell_price")} (₹/{t(`unit.${item.unit}`)})<Input inputMode="decimal" className="num mt-1" value={sell} onChange={(e) => setSell(e.target.value.replace(/[^0-9.]/g, ""))} /></label>
-      </div>
-      {dirty && <Button className="w-full" onClick={save}>{t("common.save")}</Button>}
-    </li>
   );
 }
 
@@ -214,13 +174,11 @@ export function SettingsScreen() {
 
       <PublicListing />
 
-      <section>
-        <h2 className="mb-3 text-2xl">{t("settings.items")}</h2>
-        {items.isPending ? <ListSkeleton rows={3} h="h-36" /> : items.isError ? <ErrorState onRetry={() => items.refetch()} /> : (
-          <ul className="space-y-3">{items.data.map((i) => <ItemRow key={`${i.id}-${i.buy_price}-${i.sell_price}`} item={i} />)}</ul>
-        )}
-        <Button variant="outline" className="mt-3 w-full" onClick={addItem}><Plus className="size-5" aria-hidden /> {t("onb.add_item")}</Button>
-      </section>
+      <Link href="/app/products" className="card btn-press flex min-h-16 items-center gap-4 px-5 text-xl font-semibold">
+        <Package className="size-7 text-primary" aria-hidden />
+        <span className="flex-1">{t("settings.items")}</span>
+        <ChevronRight className="size-6 text-muted" aria-hidden />
+      </Link>
 
       <Card className="space-y-3">
         <h2 className="text-xl">{t("settings.pin")}</h2>
