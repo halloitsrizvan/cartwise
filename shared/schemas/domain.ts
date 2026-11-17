@@ -28,7 +28,7 @@ export const RegisterMarketSchema = z.strictObject({
   name: text(80),
   market_name: text(100),
   area: text(80),
-  phone: z.string().trim().regex(/^d{10}$/).optional(),
+  phone: z.string().trim().regex(/^[0-9]{10}$/).optional(),
 });
 export const DemoLoginSchema = z.strictObject({ role: RoleSchema });
 export const PinChangeSchema = z.strictObject({
