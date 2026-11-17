@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Toaster } from "sonner";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { QueryProvider } from "@/lib/api/query-provider";
@@ -53,7 +53,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryProvider>
           {children}
           <Toasts />
-          <ChatWidget />
+          {/* usePathname() inside needs a Suspense boundary so static pages can still prerender */}
+          <Suspense fallback={null}>
+            <ChatWidget />
+          </Suspense>
           <RegisterSW />
         </QueryProvider>
       </I18nProvider>
