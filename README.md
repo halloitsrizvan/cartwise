@@ -1,56 +1,78 @@
-# Hackathon Base
+# CartWise
 
-Problem-agnostic starter: auth with roles, layered API, generated API docs, image uploads.
-No domain features. Build yours with [docs/ADD_A_FEATURE.md](docs/ADD_A_FEATURE.md).
+**Plan the day. Prove the income.** A Malayalam-first PWA for street vendors in Kerala: log sales by tap or voice, close the day, get tomorrow's buy list with reasons (read aloud), see real profit and waste, share a proof-of-income statement, and find cheaper wholesale offers. The product name lives in one constant: [config/brand.ts](config/brand.ts).
 
-## Stack
+> Demo numbers are **synthetic seed data**, never measured field results. The UI shows a "Demo data" badge when `DEMO_MODE=true`.
 
-Next.js (App Router, Cache Components) · TypeScript (strict) · Tailwind 4 · shadcn/ui · TanStack Query ·
-Supabase Postgres + Prisma 6 · Supabase Auth · Zod · zod-to-openapi + Scalar · Cloudinary · Vitest · Vercel.
+## Run locally
 
-> This Next.js version renames `middleware` to `proxy` (`proxy.ts`) and enables `cacheComponents`:
-> anything reading cookies must sit behind `<Suspense>`. Read `node_modules/next/dist/docs/` first.
+```bash
+npm install
+cp .env.example .env.local        # fill in the Supabase + DB values
+npm run db:deploy                 # apply prisma/migrations (tables + RLS deny-all)
+npm run db:seed                   # 3 vendors x 28-32 days, officer, 2 markets, 5 notices, 6 offers
+npm run dev                       # http://localhost:3000   API docs: /api/docs
+```
+
+Demo logins (when `DEMO_MODE=true`): buttons on `/` and `/login`. Vendor `9000000001` / PIN `1234`; officer `officer@demo.cartwise.app`; market `market@demo.cartwise.app`.
+
+## Environment
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Auth (browser-safe) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only: creates users, seed |
+| `DATABASE_URL` | Pooled Postgres (`pgbouncer=true`) for runtime |
+| `DIRECT_URL` | Direct/session Postgres for migrations |
+| `APP_URL`, `NEXT_PUBLIC_APP_URL` | Base URL for share links and OG |
+| `DEMO_MODE` | `true` shows demo login + badge |
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  UI[React pages + TanStack Query hooks] -->|fetch /api/v1| RH[Route handlers<br/>route wrapper]
-  RH --> SV[Services<br/>business logic]
-  SV --> RP[Repositories<br/>Prisma only]
-  RP --> DB[(Supabase Postgres)]
-  RH -.guards.-> AU[Supabase Auth + Profile role]
-  RH -.sign.-> CL[Cloudinary]
-  UI -->|direct upload| CL
-  ZS[lib/schemas Zod] --- RH
-  ZS --- UI
-  ZS --> OA[OpenAPI registry] --> DOCS[/api/docs/]
-  PX[proxy.ts] -.session refresh + redirects.-> UI
+```
+Browser (React, TanStack Query, IndexedDB offline queue, service worker)
+   |  fetch /api/v1/*   { data } | { error: { code, message } }
+   v
+app/api/v1/**/route.ts      thin: route() wrapper = guard -> rate limit -> Zod parse -> handler
+   v
+server/services/*           business rules; pure logic in forecast.ts money.ts passport.ts offers.ts
+   v
+server/repositories/*       Prisma only
+   v
+Supabase Postgres (RLS deny-all)      Supabase Auth (role in app_metadata)
+shared/schemas  (Zod, used by server + client + OpenAPI)      shared/voice.ts (voice parser)
 ```
 
-Layers: `app/api/v1` (thin) → `server/services` (logic) → `server/repositories` (Prisma). Shared Zod schemas in `lib/schemas`.
+- **Auth**: Supabase Auth. Vendors: phone + PIN mapped to `<phone>@vendor.local`, password `cw-<PIN>` (Supabase needs 6+ chars). SMS OTP is the production path (needs a paid provider). Officers/markets: email + password. One guard `requireRole()` in [server/lib/auth.ts](server/lib/auth.ts); ownership ids always come from the session.
+- **Offline**: Sell and Close write to an IndexedDB queue first (optimistic), sync on reconnect with retry; sales are idempotent on `client_id`; close-day is idempotent (same payload 200, different 409) and runs in one transaction with `SELECT ... FOR UPDATE`.
+- **Forecast**: newsvendor on the last 8 closed days. Constants in [server/config/constants.ts](server/config/constants.ts).
+- **Rate limits** are Postgres-backed (`rate_limits`): login, public passport, share creation.
 
-## Setup
+## API
 
-1. `npm install` (also runs `prisma generate`)
-2. `cp .env.example .env.local` and fill every value (see comments inside).
-3. Supabase: create a project, turn **off** "Confirm email" (Authentication → Providers → Email) for the demo.
-4. `npm run db:push`
-5. Create two users in Supabase (Authentication → Users), then
-   `SEED_ADMIN_ID=<uuid> SEED_USER_ID=<uuid> npm run db:seed`
-   (users who sign up normally get a `USER` profile automatically on first request).
-6. `npm run dev` → http://localhost:3000, API docs at `/api/docs`.
+Full, generated from the Zod schemas: **`/api/docs`** (JSON at `/api/openapi.json`). Groups: Auth, Vendor, Items, Day (`today`, `context`, `sales`, `close`), Plan, Money, Passport (+ share), Offers, Notices, Officer, Market, Public, `GET /api/health`.
 
-## Scripts
+## Tests
 
-| Script | Purpose |
-| --- | --- |
-| `dev` / `build` / `start` | Next.js |
-| `typecheck` / `lint` / `test` | Quality gates |
-| `check` | typecheck + lint + test + build |
-| `db:push` / `db:migrate` / `db:seed` / `db:studio` / `db:generate` | Prisma |
+```bash
+npm test            # vitest: forecast, money, passport, offers, voice, i18n, API ownership, close-day concurrency
+npm run test:e2e    # playwright smoke (needs `npx playwright install chromium` and a production build)
+npm run check       # typecheck + lint + test + build
+```
 
-## Deploy (Vercel)
+API and concurrency tests use the real database in `.env.local` and clean up the rows they create.
 
-Import the repo, add every variable from `.env.example` in Project Settings → Environment Variables, deploy.
-`NEXT_PUBLIC_APP_URL` = the Vercel URL. Rate limiting is in-memory and per instance: swap for Upstash for production.
+## Demo script (5 min)
+
+1. `/` -> **Demo vendor**. Today shows the plan card and sales so far.
+2. **Sell**: tap mango tiles, long-press for quantities, undo from the strip. Toggle offline in devtools: the badge shows "Offline - N saved", then "Synced".
+3. **Close day**: step through the items, enter cost, see profit / waste / missed sales.
+4. **Plan**: tomorrow's list with reasons, change a quantity, press Play (Malayalam voice if the device has one).
+5. **Money**: the Before vs After card (gut feeling vs followed the plan; tagged as seeded demo data).
+6. **Passport**: readiness ring, **Share**, open the link in a private window; revoke it.
+7. Log out, **Demo officer**: overview, publish a notice, registration assist, approve the pending market, export CSV. **Demo market**: post an offer; the vendor Offers tab shows "Save about Rs X tomorrow".
+
+## Notes
+
+- Seed: fruit vendor has 32 days (so the readiness checklist can be fully ticked), others 28. First days are "gut feel", the last 14 follow the plan.
+- Registration assist is a **simulated** process; nothing is sent to any government system. The readiness list is indicative, not official eligibility.
