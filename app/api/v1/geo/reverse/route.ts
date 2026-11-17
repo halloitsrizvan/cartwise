@@ -15,7 +15,7 @@ const snap = (s: string) => ALIAS[s.toLowerCase()] ?? KERALA_AREAS.find((k) => k
 export const GET = route({ query: Query, rateLimit: { name: "geo", limit: 20, windowSec: 60 } }, async ({ query }) => {
   const lat = query.lat.toFixed(3);
   const lon = query.lon.toFixed(3);
-  let json: { address?: Addr } | null = null;
+  let json: { address?: Addr; display_name?: string } | null = null;
   try {
     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&addressdetails=1&accept-language=en&lat=${lat}&lon=${lon}`, {
       headers: { "User-Agent": "CartWise/1.0 (vendor area lookup)", Accept: "application/json" },
@@ -32,5 +32,6 @@ export const GET = route({ query: Query, rateLimit: { name: "geo", limit: 20, wi
   const district = clean(a.state_district ?? a.county);
   const suggestions = [...new Set([district, city, locality].filter((x): x is string => !!x).map(snap))];
   if (!suggestions.length) throw AppError.notFound("No area found");
-  return NextResponse.json({ data: { area: suggestions[0], suggestions } });
+  const display = (json?.display_name ?? "").split(",").slice(0, 3).join(",").trim();
+  return NextResponse.json({ data: { area: suggestions[0], suggestions, display } });
 });

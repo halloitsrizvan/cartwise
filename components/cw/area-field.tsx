@@ -15,34 +15,63 @@ export function AreaField({ id, value, onChange, error, showChips }: { id: strin
   const [state, setState] = useState<"idle" | "busy">("idle");
   const [msg, setMsg] = useState("");
   const [found, setFound] = useState<string[]>([]);
+  const [info, setInfo] = useState<{ display: string; accuracy: number } | null>(null);
 
-  const lookup = async (lat: number, lon: number) => {
+  const lookup = async (lat: number, lon: number, accuracy: number) => {
     try {
-      const r = await api<{ area: string; suggestions: string[] }>(`/api/v1/geo/reverse?lat=${lat}&lon=${lon}`);
+      const r = await api<{ area: string; suggestions: string[]; display: string }>(`/api/v1/geo/reverse?lat=${lat}&lon=${lon}`);
       onChange(r.area);
       setFound(r.suggestions);
+      setInfo({ display: r.display, accuracy: Math.round(accuracy) });
     } catch {
       setMsg(t("area.failed"));
     }
     setState("idle");
   };
 
+  /**
+   * Wait for a GPS-quality fix instead of taking the first (often coarse, Wi-Fi/IP based) one:
+   * watch for up to 15 s, stop early once accuracy is within 100 m, keep the most accurate reading.
+   */
   const locate = () => {
     setMsg("");
     setFound([]);
+    setInfo(null);
     if (!("geolocation" in navigator)) return setMsg(t("area.unsupported"));
     if (!window.isSecureContext) return setMsg(t("area.insecure"));
     setState("busy");
-    const fail = (err: GeolocationPositionError) => {
-      setMsg(err.code === err.PERMISSION_DENIED ? t("area.denied") : err.code === err.TIMEOUT ? t("area.timeout") : t("area.failed"));
-      setState("idle");
+    let best: GeolocationPosition | null = null;
+    let finished = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let watchId = -1;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      if (timer) clearTimeout(timer);
+      navigator.geolocation.clearWatch(watchId);
+      if (best) void lookup(best.coords.latitude, best.coords.longitude, best.coords.accuracy);
+      else {
+        setMsg(t("area.timeout"));
+        setState("idle");
+      }
     };
-    const ok = (pos: GeolocationPosition) => void lookup(pos.coords.latitude, pos.coords.longitude);
-    // try a precise fix first; if it times out, accept a coarse (network) fix
-    navigator.geolocation.getCurrentPosition(ok, (err) => {
-      if (err.code === err.PERMISSION_DENIED) return fail(err);
-      navigator.geolocation.getCurrentPosition(ok, fail, { enableHighAccuracy: false, timeout: 15_000, maximumAge: 600_000 });
-    }, { enableHighAccuracy: true, timeout: 8_000, maximumAge: 60_000 });
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+        if (pos.coords.accuracy <= 100) finish();
+      },
+      (err) => {
+        if (finished) return;
+        if (best) return finish();
+        finished = true;
+        if (timer) clearTimeout(timer);
+        navigator.geolocation.clearWatch(watchId);
+        setMsg(err.code === err.PERMISSION_DENIED ? t("area.denied") : err.code === err.TIMEOUT ? t("area.timeout") : t("area.failed"));
+        setState("idle");
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20_000 },
+    );
+    timer = setTimeout(finish, 15_000);
   };
 
   return (
@@ -57,6 +86,14 @@ export function AreaField({ id, value, onChange, error, showChips }: { id: strin
         <p role="alert" className="font-medium text-danger">
           {msg}
         </p>
+      )}
+      {info && (
+        <div className="card-2 space-y-1 p-3" role="status" data-testid="geo-info">
+          {info.display && <p className="font-semibold">{t("area.found", { place: info.display })}</p>}
+          <p className={info.accuracy > 1000 ? "font-medium text-danger" : "text-sm text-muted"}>
+            {info.accuracy > 1000 ? t("area.approx", { n: info.accuracy >= 1000 ? `${(info.accuracy / 1000).toFixed(1)} km` : `${info.accuracy} m` }) : t("area.accuracy", { n: info.accuracy })}
+          </p>
+        </div>
       )}
       {found.length > 1 && (
         <div>

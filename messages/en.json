@@ -511,5 +511,8 @@
   "landing.dashboard": "Go to my dashboard",
   "landing.dashboard_short": "Dashboard",
   "landing.cta_back": "Welcome back.",
-  "landing.banner_cta_user": "Open my income proof"
+  "landing.banner_cta_user": "Open my income proof",
+  "area.found": "Found: {place}",
+  "area.accuracy": "Accuracy about {n} m",
+  "area.approx": "This location is only approximate (within {n}). Turn on GPS or pick the correct area below."
 }

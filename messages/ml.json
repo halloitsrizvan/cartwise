@@ -511,5 +511,8 @@
   "landing.dashboard": "എന്റെ ഡാഷ്‌ബോർഡിലേക്ക് പോകൂ",
   "landing.dashboard_short": "ഡാഷ്‌ബോർഡ്",
   "landing.cta_back": "വീണ്ടും സ്വാഗതം.",
-  "landing.banner_cta_user": "എന്റെ വരുമാന തെളിവ് തുറക്കൂ"
+  "landing.banner_cta_user": "എന്റെ വരുമാന തെളിവ് തുറക്കൂ",
+  "area.found": "കണ്ടെത്തിയത്: {place}",
+  "area.accuracy": "കൃത്യത ഏകദേശം {n} മീറ്റർ",
+  "area.approx": "ഈ ലൊക്കേഷൻ ഏകദേശമാണ് ({n} പരിധി). GPS ഓണാക്കൂ, അല്ലെങ്കിൽ താഴെ ശരിയായ പ്രദേശം തിരഞ്ഞെടുക്കൂ."
 }
