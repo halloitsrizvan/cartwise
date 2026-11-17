@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { ChatWidget } from "@/components/chat/chat-widget";
 import { QueryProvider } from "@/lib/api/query-provider";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider, useTheme } from "@/lib/theme";
@@ -52,6 +53,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryProvider>
           {children}
           <Toasts />
+          <ChatWidget />
           <RegisterSW />
         </QueryProvider>
       </I18nProvider>

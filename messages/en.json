@@ -526,5 +526,20 @@
   "voice.offline": "Voice needs the internet. Tap the products instead.",
   "voice.unavailable": "Voice is not available right now. Tap the products instead.",
   "voice.mic_denied": "Microphone permission was denied. Allow it in the browser settings.",
-  "voice.too_short": "That was too short. Tap the mic and speak."
+  "voice.too_short": "That was too short. Tap the mic and speak.",
+  "chat.title": "CartWise Assistant",
+  "chat.sub": "Ask about selling, plans, payments, schemes",
+  "chat.open": "Open assistant chat",
+  "chat.clear": "Start a new chat",
+  "chat.send": "Send",
+  "chat.placeholder": "Type your question...",
+  "chat.thinking": "Thinking...",
+  "chat.sources": "From",
+  "chat.hello": "Hi! I can help you use CartWise: selling, the buy plan, UPI payments, income proof and schemes. What would you like to know?",
+  "chat.q1": "How do I take a UPI payment?",
+  "chat.q2": "How is tomorrow's plan decided?",
+  "chat.q3": "How do I prove my income for a loan?",
+  "chat.q4": "How did my last 7 days go?",
+  "chat.unavailable": "The assistant is not available right now. Please try again in a moment.",
+  "chat.offline": "The assistant needs the internet."
 }

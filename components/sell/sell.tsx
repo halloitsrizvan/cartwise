@@ -132,7 +132,7 @@ export function SellScreen() {
       )}
 
       {canVoice && !live.closed && (
-        <button type="button" onClick={() => setVoiceOpen(true)} aria-label={t("sell.mic")} data-testid="mic-fab" className={cn("btn-press fixed right-4 z-30 grid size-16 place-items-center rounded-full bg-accent text-on-accent shadow-xl", count > 0 ? "bottom-48 md:bottom-28" : "bottom-28 md:bottom-8")}>
+        <button type="button" onClick={() => setVoiceOpen(true)} aria-label={t("sell.mic")} data-testid="mic-fab" className={cn("btn-press fixed right-4 z-30 grid size-16 place-items-center rounded-full bg-accent text-on-accent shadow-xl", "bottom-[15.5rem] md:bottom-24")}>
           <Mic className="size-8" aria-hidden />
         </button>
       )}

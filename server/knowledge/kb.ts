@@ -1,0 +1,163 @@
+/**
+ * Knowledge base for the CartWise assistant (RAG). Each chunk has English and Malayalam text;
+ * both are indexed so questions in either language retrieve the right chunk.
+ * Keep chunks short and factual. Scheme facts are indicative, never legal advice.
+ */
+export type KbChunk = { id: string; title: string; en: string; ml: string; tags?: string };
+
+export const KB: KbChunk[] = [
+  {
+    id: "what-is",
+    title: "What is CartWise",
+    en: "CartWise helps street vendors plan how much stock to buy each morning, record sales by tap or voice, see real profit and waste, and share a proof-of-income statement for loans and schemes. It works in Malayalam and English and keeps working without internet.",
+    ml: "തെരുവ് കച്ചവടക്കാർക്ക് ഓരോ രാവിലെയും എത്ര സ്റ്റോക്ക് വാങ്ങണമെന്ന് പ്ലാൻ ചെയ്യാനും, ടാപ്പ് അല്ലെങ്കിൽ ശബ്ദം വഴി വിൽപ്പന രേഖപ്പെടുത്താനും, യഥാർത്ഥ ലാഭവും പാഴാക്കലും കാണാനും, വായ്പയ്ക്കും പദ്ധതികൾക്കും വരുമാന തെളിവ് പങ്കിടാനും CartWise സഹായിക്കുന്നു. മലയാളത്തിലും ഇംഗ്ലീഷിലും പ്രവർത്തിക്കും, ഇന്റർനെറ്റ് ഇല്ലാതെയും.",
+    tags: "about overview start",
+  },
+  {
+    id: "sell-bill",
+    title: "Selling with a bill",
+    en: "On the Sell page, tap a product, choose how much in the popup at the bottom, and tap Add to bill. Add as many products as you like. Then tap Collect to see the bill and choose Cash received or Pay by UPI. The sale is saved when you confirm payment. You can undo it for a few seconds afterwards.",
+    ml: "വിൽപ്പന പേജിൽ ഒരു സാധനത്തിൽ തൊടൂ, താഴെ വരുന്ന പോപ്പ്അപ്പിൽ എത്രയെന്ന് തിരഞ്ഞെടുത്ത് ബില്ലിൽ ചേർക്കൂ എന്ന് അമർത്തൂ. എത്ര സാധനങ്ങൾ വേണമെങ്കിലും ചേർക്കാം. പിന്നെ പണം വാങ്ങൂ അമർത്തി ബിൽ കണ്ട് പണം കിട്ടി അല്ലെങ്കിൽ UPI വഴി അടയ്ക്കൂ തിരഞ്ഞെടുക്കൂ. പേയ്‌മെന്റ് ഉറപ്പിക്കുമ്പോൾ വിൽപ്പന സേവ് ആകും. കുറച്ച് സെക്കൻഡ് തിരിച്ചെടുക്കാം.",
+    tags: "sell tap product quantity bill collect cash undo",
+  },
+  {
+    id: "upi-qr",
+    title: "UPI QR code for payments",
+    en: "Add your UPI ID once in Settings under UPI for payments, or on the QR screen the first time. After that, Pay by UPI shows a QR code for the exact bill amount. The customer scans it with any UPI app. Money goes straight to your account; CartWise never touches it. Tap Payment received when the customer has paid.",
+    ml: "ക്രമീകരണങ്ങളിൽ പണമടയ്ക്കാൻ UPI എന്നതിൽ, അല്ലെങ്കിൽ ആദ്യമായി QR സ്ക്രീനിൽ, നിങ്ങളുടെ UPI ഐഡി ഒരിക്കൽ ചേർക്കൂ. പിന്നെ UPI വഴി അടയ്ക്കൂ എന്നത് ബില്ലിന്റെ കൃത്യമായ തുകയ്ക്ക് QR കാണിക്കും. ഉപഭോക്താവ് ഏത് UPI ആപ്പിലും സ്കാൻ ചെയ്യും. പണം നേരിട്ട് നിങ്ങളുടെ അക്കൗണ്ടിൽ എത്തും; CartWise പണം തൊടുന്നില്ല. ഉപഭോക്താവ് അടച്ചാൽ പണം കിട്ടി അമർത്തൂ.",
+    tags: "upi qr payment scan gpay phonepe paytm",
+  },
+  {
+    id: "voice",
+    title: "Voice assistant on Sell",
+    en: "On the Sell page tap the microphone button, say what you sold, for example two kilo mango and three banana, then tap again to stop. The app listens, understands the products and quantities, and puts them on your bill automatically. A wrong match can be removed with the cross on its chip. Voice needs internet and microphone permission.",
+    ml: "വിൽപ്പന പേജിൽ മൈക്ക് ബട്ടൺ അമർത്തി വിറ്റത് പറയൂ, ഉദാഹരണം രണ്ട് കിലോ മാങ്ങ, മൂന്ന് വാഴപ്പഴം, എന്നിട്ട് നിർത്താൻ വീണ്ടും അമർത്തൂ. ആപ്പ് കേട്ട് സാധനങ്ങളും അളവും മനസ്സിലാക്കി ബില്ലിൽ സ്വയം ചേർക്കും. തെറ്റിയത് ചിപ്പിലെ ക്രോസ് കൊണ്ട് ഒഴിവാക്കാം. വോയ്സിന് ഇന്റർനെറ്റും മൈക്ക് അനുമതിയും വേണം.",
+    tags: "voice speak microphone mic record say",
+  },
+  {
+    id: "close-day",
+    title: "Closing the day",
+    en: "On the Today page tap Close day (it becomes the main button after 6 pm). The app works out the summary from today's sales and your plan: bought equals the plan quantity, leftover is bought minus sold, a product counts as sold out when you sold at least the plan, and cost is bought times buy price. Confirm once. Nothing to type. Old days that were never closed are closed automatically.",
+    ml: "ഇന്ന് പേജിൽ ദിവസം അടയ്ക്കൂ അമർത്തൂ (വൈകിട്ട് 6 കഴിഞ്ഞാൽ അത് പ്രധാന ബട്ടൺ ആകും). ഇന്നത്തെ വിൽപ്പനയിൽ നിന്നും പ്ലാനിൽ നിന്നും ആപ്പ് കണക്ക് തയ്യാറാക്കും: വാങ്ങിയത് = പ്ലാൻ അളവ്, ബാക്കി = വാങ്ങിയത് − വിറ്റത്, പ്ലാൻ അളവ് വിറ്റാൽ സാധനം തീർന്നു എന്ന് കണക്കാക്കും, ചെലവ് = വാങ്ങിയത് × വാങ്ങൽ വില. ഒരു തവണ ഉറപ്പിച്ചാൽ മതി, ഒന്നും ടൈപ്പ് ചെയ്യേണ്ട. അടയ്ക്കാത്ത പഴയ ദിവസങ്ങൾ സ്വയം അടയ്ക്കും.",
+    tags: "close day end summary leftover waste sold out",
+  },
+  {
+    id: "plan",
+    title: "Tomorrow's buy plan",
+    en: "The Plan page gives a recommended quantity for each product for tomorrow, with a range, a confidence level and short reasons such as weekday, rain, festival or payday week. It uses your last 8 closed days, counts days you sold out as higher demand, and balances the cost of waste against the profit of one more sale. You can change any quantity with the plus and minus buttons. Press Read aloud to hear the list. Turn on Rain, Festival or Payday for tomorrow to update it.",
+    ml: "പ്ലാൻ പേജ് നാളത്തേക്ക് ഓരോ സാധനത്തിനും ശുപാർശ ചെയ്യുന്ന അളവ്, പരിധി, ഉറപ്പിന്റെ നില, ആഴ്ചയിലെ ദിവസം, മഴ, ഉത്സവം, ശമ്പള ആഴ്ച തുടങ്ങിയ ചെറിയ കാരണങ്ങൾ എന്നിവ നൽകും. അവസാന 8 അടച്ച ദിവസങ്ങൾ ഉപയോഗിക്കുന്നു, സാധനം തീർന്ന ദിവസങ്ങൾ കൂടുതൽ ആവശ്യമായി കണക്കാക്കും, പാഴാകുന്നതിന്റെ ചെലവും ഒരു വിൽപ്പന കൂടി കിട്ടുന്നതിന്റെ ലാഭവും തൂക്കിനോക്കും. കൂട്ടാനും കുറയ്ക്കാനും + − ബട്ടണുകൾ ഉപയോഗിക്കാം. പട്ടിക കേൾക്കാൻ വായിച്ചു കേൾക്കൂ അമർത്തൂ. നാളത്തേക്ക് മഴ, ഉത്സവം, ശമ്പളം ഓൺ ചെയ്താൽ പ്ലാൻ മാറും.",
+    tags: "plan buy tomorrow recommend quantity forecast how much reasons confidence",
+  },
+  {
+    id: "plan-new",
+    title: "New vendors and few days of data",
+    en: "With fewer than 3 closed days the plan uses typical starting quantities for your stall type and shows low confidence. Confidence becomes medium from 3 days and high from 8 days of records.",
+    ml: "3 ദിവസത്തിൽ കുറവ് അടച്ച ദിവസങ്ങളേ ഉള്ളൂ എങ്കിൽ പ്ലാൻ നിങ്ങളുടെ കടയുടെ തരത്തിനനുസരിച്ച് സാധാരണ തുടക്ക അളവുകൾ ഉപയോഗിക്കുകയും കുറഞ്ഞ ഉറപ്പ് കാണിക്കുകയും ചെയ്യും. 3 ദിവസം കഴിഞ്ഞാൽ ഇടത്തരം, 8 ദിവസം കഴിഞ്ഞാൽ ഉയർന്ന ഉറപ്പ്.",
+    tags: "new start few data cold confidence low",
+  },
+  {
+    id: "money",
+    title: "Money page: profit, waste and before-after",
+    en: "The Money page shows profit for 7 or 30 days with a daily chart, money wasted on leftovers, and sales lost because you ran out (an estimate). The Before and After card compares days you followed the plan with days you did not: average waste, profit per day and how often you ran out. Demo accounts show a tag because their numbers are seeded sample data.",
+    ml: "പണം പേജ് 7 അല്ലെങ്കിൽ 30 ദിവസത്തെ ലാഭം ദിവസേനയുള്ള ചാർട്ടോടെ കാണിക്കും, ബാക്കിവന്ന് പാഴായ പണവും, സ്റ്റോക്ക് തീർന്നതിനാൽ നഷ്ടമായ വിൽപ്പനയും (ഏകദേശ കണക്ക്). മുമ്പും ശേഷവും കാർഡ് പ്ലാൻ പിന്തുടർന്ന ദിവസങ്ങളും അല്ലാത്തവയും താരതമ്യം ചെയ്യും: ശരാശരി പാഴാകൽ, ദിവസ ലാഭം, സാധനം തീർന്ന തവണകൾ. ഡെമോ അക്കൗണ്ടുകളിലെ കണക്കുകൾ മാതൃകാ ഡാറ്റയായതിനാൽ ടാഗ് കാണിക്കും.",
+    tags: "money profit waste lost before after chart",
+  },
+  {
+    id: "payments",
+    title: "Payment records",
+    en: "The Payments page lists every bill with its products, quantities, prices, the time and whether it was paid by cash or UPI, grouped by day with totals. Choose 7, 30 or 90 days. Sales saved before bills existed appear as one Earlier sales entry per day.",
+    ml: "പേയ്‌മെന്റുകൾ പേജ് ഓരോ ബില്ലും അതിലെ സാധനങ്ങൾ, അളവ്, വില, സമയം, പണമോ UPI യോ എന്നിവയോടെ ദിവസം തിരിച്ച് ആകെ തുകകളോടെ കാണിക്കും. 7, 30 അല്ലെങ്കിൽ 90 ദിവസം തിരഞ്ഞെടുക്കാം. ബില്ലുകൾ വരുന്നതിന് മുമ്പ് സേവ് ചെയ്ത വിൽപ്പന ഓരോ ദിവസത്തിനും മുമ്പത്തെ വിൽപ്പന എന്ന ഒറ്റ എൻട്രിയായി കാണും.",
+    tags: "payments history records bills cash upi",
+  },
+  {
+    id: "products",
+    title: "Editing products",
+    en: "Open Products from the sidebar or the More page. Add a product, edit its name in Malayalam and English, picture, buy price, sell price, unit (kg, piece, cup, bundle) and how much each tap adds. Hide a product you no longer sell with the eye button; its history is kept and you can show it again.",
+    ml: "സൈഡ്ബാറിൽ നിന്നോ കൂടുതൽ പേജിൽ നിന്നോ സാധനങ്ങൾ തുറക്കൂ. സാധനം ചേർക്കാം, മലയാളത്തിലും ഇംഗ്ലീഷിലുമുള്ള പേര്, ചിത്രം, വാങ്ങൽ വില, വിൽപ്പന വില, യൂണിറ്റ് (കിലോ, എണ്ണം, കപ്പ്, കെട്ട്), ഓരോ ടാപ്പിലും കൂടുന്ന അളവ് എന്നിവ മാറ്റാം. ഇനി വിൽക്കാത്ത സാധനം കണ്ണ് ബട്ടൺ കൊണ്ട് ഒളിപ്പിക്കാം; ചരിത്രം നിലനിൽക്കും, വീണ്ടും കാണിക്കാം.",
+    tags: "products items edit price add hide name unit",
+  },
+  {
+    id: "income-proof",
+    title: "Income proof (statement)",
+    en: "The Income proof page makes a clean statement from your own daily records: average daily profit over the last 30 days, active days, and a consistency label (Steady, Growing or Variable). Tap Share to create a private link. The link is shown once, expires in 30 days, can be sent on WhatsApp, and can be revoked at any time. The public page shows only your first name and averages, never your phone number or exact area.",
+    ml: "വരുമാന തെളിവ് പേജ് നിങ്ങളുടെ സ്വന്തം ദിവസ രേഖകളിൽ നിന്ന് വൃത്തിയുള്ള സ്റ്റേറ്റ്‌മെന്റ് ഉണ്ടാക്കും: കഴിഞ്ഞ 30 ദിവസത്തെ ശരാശരി ദിവസ ലാഭം, പ്രവർത്തിച്ച ദിവസങ്ങൾ, സ്ഥിരത (സ്ഥിരം, വളരുന്നു, മാറിക്കൊണ്ടിരിക്കുന്നു). പങ്കിടൂ അമർത്തി സ്വകാര്യ ലിങ്ക് ഉണ്ടാക്കാം. ലിങ്ക് ഒരിക്കൽ മാത്രം കാണിക്കും, 30 ദിവസത്തിൽ കാലഹരണപ്പെടും, വാട്സാപ്പിൽ അയയ്ക്കാം, എപ്പോൾ വേണമെങ്കിലും റദ്ദാക്കാം. പൊതു പേജിൽ ആദ്യ പേരും ശരാശരികളും മാത്രം, ഫോൺ നമ്പറോ കൃത്യമായ സ്ഥലമോ ഇല്ല.",
+    tags: "income proof statement passport share link whatsapp revoke privacy",
+  },
+  {
+    id: "loan-checklist",
+    title: "Loan checklist and PM SVANidhi",
+    en: "The Loan checklist shows how ready your records are for schemes such as PM SVANidhi. Automatic items: 30 or more days logged, days closed properly (80 percent or more), and average daily profit calculated. You tick yourself: an ID proof, a vending certificate or letter of recommendation, and a bank account or UPI. This list is only indicative, not official eligibility. PM SVANidhi is a government scheme for street vendors offering working-capital loans without collateral; check current terms with your local body or the official portal.",
+    ml: "PM SVANidhi പോലുള്ള പദ്ധതികൾക്ക് നിങ്ങളുടെ രേഖകൾ എത്ര തയ്യാറാണെന്ന് വായ്പ ചെക്ക്‌ലിസ്റ്റ് കാണിക്കും. സ്വയമേവ: 30 ദിവസമോ അതിലധികമോ രേഖപ്പെടുത്തി, ദിവസങ്ങൾ ശരിയായി അടച്ചു (80% അല്ലെങ്കിൽ കൂടുതൽ), ശരാശരി ദിവസ ലാഭം കണക്കാക്കി. നിങ്ങൾ ടിക്ക് ചെയ്യേണ്ടത്: തിരിച്ചറിയൽ രേഖ, വെൻഡിങ് സർട്ടിഫിക്കറ്റ് അല്ലെങ്കിൽ LoR, ബാങ്ക് അക്കൗണ്ട് അല്ലെങ്കിൽ UPI. ഈ പട്ടിക സൂചന മാത്രമാണ്, ഔദ്യോഗിക യോഗ്യതയല്ല. തെരുവ് കച്ചവടക്കാർക്ക് ഈടില്ലാതെ പ്രവർത്തന മൂലധന വായ്പ നൽകുന്ന സർക്കാർ പദ്ധതിയാണ് PM SVANidhi; നിലവിലെ നിബന്ധനകൾ പ്രാദേശിക സ്ഥാപനത്തിലോ ഔദ്യോഗിക പോർട്ടലിലോ പരിശോധിക്കൂ.",
+    tags: "loan checklist pm svanidhi scheme eligibility readiness government vending certificate lor",
+  },
+  {
+    id: "offline",
+    title: "Working without internet",
+    en: "Selling works with no internet. Sales and the day close are saved on your phone and sent automatically when the connection returns, without duplicates. Screens you opened before still open offline. Voice, the QR for a brand-new UPI ID, income sharing and this chat need internet. Install the app from the More page for the best offline experience.",
+    ml: "ഇന്റർനെറ്റ് ഇല്ലാതെയും വിൽപ്പന പ്രവർത്തിക്കും. വിൽപ്പനയും ദിവസം അടയ്ക്കലും ഫോണിൽ സേവ് ആകും, കണക്ഷൻ വരുമ്പോൾ ഇരട്ടിപ്പില്ലാതെ സ്വയം അയയ്ക്കും. മുമ്പ് തുറന്ന സ്ക്രീനുകൾ ഓഫ്‌ലൈനിലും തുറക്കും. വോയ്സ്, വരുമാന പങ്കിടൽ, ഈ ചാറ്റ് എന്നിവയ്ക്ക് ഇന്റർനെറ്റ് വേണം. മികച്ച ഓഫ്‌ലൈൻ അനുഭവത്തിന് കൂടുതൽ പേജിൽ നിന്ന് ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യൂ.",
+    tags: "offline internet without internet works work no network connection sync pwa",
+  },
+  {
+    id: "install",
+    title: "Installing the app",
+    en: "CartWise is a web app that can be installed. On Android Chrome open the More page and tap Install, or use the browser menu and choose Install app. On iPhone open it in Safari, tap Share, then Add to Home Screen.",
+    ml: "CartWise ഇൻസ്റ്റാൾ ചെയ്യാവുന്ന വെബ് ആപ്പ് ആണ്. ആൻഡ്രോയിഡ് ക്രോമിൽ കൂടുതൽ പേജ് തുറന്ന് ഇൻസ്റ്റാൾ അമർത്തൂ, അല്ലെങ്കിൽ ബ്രൗസർ മെനുവിൽ നിന്ന് Install app തിരഞ്ഞെടുക്കൂ. ഐഫോണിൽ Safari യിൽ തുറന്ന് Share അമർത്തി Add to Home Screen തിരഞ്ഞെടുക്കൂ.",
+    tags: "install app home screen pwa android iphone",
+  },
+  {
+    id: "public-list",
+    title: "Public vendor list and trust score",
+    en: "Anyone can find vendors on the Find vendors page and filter by area and stall type. Only vendors who switch on Show me in the public list in Settings appear. They can add a public phone number and a landmark. Vendors are ranked by a trust score from 0 to 100 based on days of records, closing days properly, steady sales and low waste. Income is never shown publicly.",
+    ml: "കച്ചവടക്കാരെ കണ്ടെത്തൂ പേജിൽ ആർക്കും കച്ചവടക്കാരെ കണ്ടെത്താം, പ്രദേശവും കടയുടെ തരവും അനുസരിച്ച് തിരയാം. ക്രമീകരണങ്ങളിൽ പൊതു പട്ടികയിൽ എന്നെ കാണിക്കൂ ഓൺ ചെയ്ത കച്ചവടക്കാർ മാത്രമേ കാണൂ. അവർക്ക് പൊതു ഫോൺ നമ്പറും അടയാളവും ചേർക്കാം. രേഖകളുള്ള ദിവസങ്ങൾ, ദിവസം ശരിയായി അടയ്ക്കൽ, സ്ഥിരമായ വിൽപ്പന, കുറഞ്ഞ പാഴാകൽ എന്നിവ അടിസ്ഥാനമാക്കി 0 മുതൽ 100 വരെ വിശ്വാസ സ്കോർ അനുസരിച്ചാണ് റാങ്ക്. വരുമാനം പൊതുവായി ഒരിക്കലും കാണിക്കില്ല.",
+    tags: "public list find vendors trust score rank directory",
+  },
+  {
+    id: "account",
+    title: "Account, password and language",
+    en: "Sign up with an email and a password of at least 8 characters, then answer four short questions: language, what you sell, check your products and prices, and your area. Change the password, language, theme (Light, Dark, Sunlight for bright outdoors) and text size in Settings. The language button in the top bar switches between Malayalam and English.",
+    ml: "ഇമെയിലും കുറഞ്ഞത് 8 അക്ഷരമുള്ള പാസ്‌വേഡും ഉപയോഗിച്ച് രജിസ്റ്റർ ചെയ്യൂ, പിന്നെ നാല് ചെറിയ ചോദ്യങ്ങൾ: ഭാഷ, എന്ത് വിൽക്കുന്നു, സാധനങ്ങളും വിലയും നോക്കൂ, നിങ്ങളുടെ പ്രദേശം. പാസ്‌വേഡ്, ഭാഷ, തീം (ലൈറ്റ്, ഡാർക്ക്, വെയിലത്തിന് സൂര്യപ്രകാശം), അക്ഷര വലുപ്പം എന്നിവ ക്രമീകരണങ്ങളിൽ മാറ്റാം. മുകളിലെ ഭാഷ ബട്ടൺ മലയാളത്തിനും ഇംഗ്ലീഷിനും ഇടയിൽ മാറ്റും.",
+    tags: "account sign up register login password language theme settings",
+  },
+  {
+    id: "location",
+    title: "Using current location for the area",
+    en: "In onboarding the area field has a Use my current location button. It reads your device location, finds the district or city and suggests nearby names to pick from. It is accurate with GPS (phones) and approximate on laptops; if it says approximate, pick the area from the chips or type it. Only the area name is saved, not coordinates.",
+    ml: "ഓൺബോർഡിങ്ങിൽ പ്രദേശം കളത്തിൽ എന്റെ ഇപ്പോഴത്തെ സ്ഥലം എടുക്കൂ ബട്ടൺ ഉണ്ട്. ഉപകരണത്തിന്റെ ലൊക്കേഷൻ എടുത്ത് ജില്ലയോ നഗരമോ കണ്ടെത്തി അടുത്തുള്ള പേരുകൾ തിരഞ്ഞെടുക്കാൻ നിർദ്ദേശിക്കും. ഫോണുകളിൽ GPS കൊണ്ട് കൃത്യമാണ്, ലാപ്ടോപ്പിൽ ഏകദേശമാണ്; ഏകദേശം എന്ന് പറഞ്ഞാൽ ചിപ്പുകളിൽ നിന്ന് തിരഞ്ഞെടുക്കൂ അല്ലെങ്കിൽ ടൈപ്പ് ചെയ്യൂ. പ്രദേശത്തിന്റെ പേര് മാത്രം സേവ് ചെയ്യും, കോർഡിനേറ്റുകൾ അല്ല.",
+    tags: "location gps area current onboarding",
+  },
+  {
+    id: "troubleshoot",
+    title: "Common problems",
+    en: "If a screen shows an error, check the internet and tap Try again. If sales do not appear on another device they may still be waiting to sync; reconnect to the internet. If the QR does not show, add your UPI ID in Settings. If voice does not work, allow the microphone in the browser and check you are online. If the location is wrong, pick the area manually.",
+    ml: "സ്ക്രീനിൽ പിശക് വന്നാൽ ഇന്റർനെറ്റ് നോക്കി വീണ്ടും ശ്രമിക്കൂ അമർത്തൂ. മറ്റൊരു ഉപകരണത്തിൽ വിൽപ്പന കാണുന്നില്ലെങ്കിൽ അത് അയയ്ക്കാൻ കാത്തിരിക്കുകയാകാം; ഇന്റർനെറ്റ് വീണ്ടും ബന്ധിപ്പിക്കൂ. QR കാണുന്നില്ലെങ്കിൽ ക്രമീകരണങ്ങളിൽ UPI ഐഡി ചേർക്കൂ. വോയ്സ് പ്രവർത്തിക്കുന്നില്ലെങ്കിൽ ബ്രൗസറിൽ മൈക്ക് അനുവദിക്കൂ, ഓൺലൈനാണോ എന്ന് നോക്കൂ. ലൊക്കേഷൻ തെറ്റാണെങ്കിൽ പ്രദേശം കൈകൊണ്ട് തിരഞ്ഞെടുക്കൂ.",
+    tags: "problem error not working help trouble fix",
+  },
+  {
+    id: "privacy",
+    title: "Privacy and your data",
+    en: "Your sales and income are private to your account. Nothing is public unless you share an income-proof link or switch on the public listing, and even then income figures are only in the link you share. Voice recordings are sent for transcription and are not stored. The app does not hold or move your money.",
+    ml: "നിങ്ങളുടെ വിൽപ്പനയും വരുമാനവും നിങ്ങളുടെ അക്കൗണ്ടിൽ മാത്രം. വരുമാന തെളിവ് ലിങ്ക് പങ്കിടുകയോ പൊതു പട്ടിക ഓണാക്കുകയോ ചെയ്താൽ മാത്രമേ എന്തെങ്കിലും പൊതുവാകൂ, അപ്പോഴും വരുമാന കണക്കുകൾ നിങ്ങൾ പങ്കിടുന്ന ലിങ്കിൽ മാത്രം. വോയ്സ് റെക്കോർഡിങ്ങുകൾ എഴുത്താക്കാൻ അയയ്ക്കുന്നു, സൂക്ഷിക്കുന്നില്ല. ആപ്പ് നിങ്ങളുടെ പണം കൈവശം വയ്ക്കുകയോ കൈമാറുകയോ ചെയ്യുന്നില്ല.",
+    tags: "privacy data security safe private recording",
+  },
+  {
+    id: "admin",
+    title: "Admin features",
+    en: "Admin accounts are created by the platform team. Admins see anonymised overview numbers, publish scheme notices in Malayalam and English (optionally for one area), help vendors with registration using a pre-filled application summary and a status (this is a simulated process; nothing is sent to any government system), and export aggregate CSV where areas with fewer than 3 vendors are hidden.",
+    ml: "അഡ്മിൻ അക്കൗണ്ടുകൾ പ്ലാറ്റ്ഫോം ടീം ഉണ്ടാക്കുന്നതാണ്. അഡ്മിൻമാർക്ക് പേരില്ലാത്ത ഓവർവ്യൂ കണക്കുകൾ കാണാം, മലയാളത്തിലും ഇംഗ്ലീഷിലും (ഒരു പ്രദേശത്തിന് മാത്രമായും) പദ്ധതി അറിയിപ്പുകൾ പ്രസിദ്ധീകരിക്കാം, മുൻകൂട്ടി പൂരിപ്പിച്ച അപേക്ഷാ സംഗ്രഹവും നിലയും ഉപയോഗിച്ച് രജിസ്ട്രേഷനിൽ സഹായിക്കാം (ഇത് അനുകരണ പ്രക്രിയയാണ്; ഒരു സർക്കാർ സംവിധാനത്തിലേക്കും ഒന്നും അയയ്ക്കുന്നില്ല), 3 കച്ചവടക്കാരിൽ കുറവുള്ള പ്രദേശങ്ങൾ മറച്ച ആകെ CSV എടുക്കാം.",
+    tags: "admin notices registration csv export",
+  },
+  {
+    id: "notices",
+    title: "Scheme notices",
+    en: "The Notices page shows short government scheme news in Malayalam or English. Tap Read aloud to hear a notice, or Mark as read. A New notice chip appears on the Today page when something is unread.",
+    ml: "അറിയിപ്പുകൾ പേജ് സർക്കാർ പദ്ധതികളുടെ ചെറിയ വാർത്തകൾ മലയാളത്തിലോ ഇംഗ്ലീഷിലോ കാണിക്കും. കേൾക്കാൻ വായിച്ചു കേൾക്കൂ അമർത്തൂ, അല്ലെങ്കിൽ വായിച്ചതായി അടയാളപ്പെടുത്തൂ. വായിക്കാത്തത് ഉണ്ടെങ്കിൽ ഇന്ന് പേജിൽ പുതിയ അറിയിപ്പ് ചിപ്പ് വരും.",
+    tags: "notices scheme news government announcements",
+  },
+  {
+    id: "context-toggles",
+    title: "Rain, festival and payday settings",
+    en: "On Today and on the Plan page you can mark rain, festival or payday week. Rain lowers expected sales by 20 percent for fruit, vegetables and juice but raises tea and snacks by 10 percent. Festival raises demand by 30 percent and payday week by 10 percent. The plan updates to match.",
+    ml: "ഇന്ന് പേജിലും പ്ലാൻ പേജിലും മഴ, ഉത്സവം, ശമ്പള ആഴ്ച എന്നിവ അടയാളപ്പെടുത്താം. മഴ പഴം, പച്ചക്കറി, ജ്യൂസ് എന്നിവയുടെ പ്രതീക്ഷിത വിൽപ്പന 20% കുറയ്ക്കും, ചായ, പലഹാരം 10% കൂട്ടും. ഉത്സവം ആവശ്യം 30% കൂട്ടും, ശമ്പള ആഴ്ച 10%. പ്ലാൻ അതിനനുസരിച്ച് മാറും.",
+    tags: "rain festival payday toggle multiplier weather",
+  },
+];

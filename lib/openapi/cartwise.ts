@@ -52,6 +52,7 @@ reg("delete", "/api/v1/items/{id}", "Items", V, "Soft-delete item (active=false)
 reg("get", "/api/v1/day/today", "Day", V, "Today's log, items with sold qty, totals");
 reg("patch", "/api/v1/day/context", "Day", V, "Set rain / festival / payday (?for=tomorrow regenerates the plan)", { body: S.ContextSchema, query: S.ForQuery });
 reg("post", "/api/v1/voice/transcribe", "Voice", V, "Speech to text (Whisper). multipart/form-data: audio (file, max 2 MB), lang (ml|en). Rate limited");
+reg("post", "/api/v1/chat", "Assistant", "public", "Chat assistant (RAG: BM25 over the app guide + the signed-in vendor's own data, Groq LLM). Rate limited", { body: S.ChatSchema });
 reg("get", "/api/v1/day/payments", "Day", V, "Payment records: sales grouped into bills with method (cash/UPI) and products", { query: S.PaymentsQuery });
 reg("post", "/api/v1/day/sales", "Day", V, "Batch sale events. IDEMPOTENT on client_id (offline sync endpoint)", { body: S.SalesBatchSchema });
 reg("delete", "/api/v1/day/sales/{id}", "Day", V, "Undo (void) a sale; id may be the event id or client_id");

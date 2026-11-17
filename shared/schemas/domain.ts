@@ -146,6 +146,14 @@ export const NoticeInputSchema = z.strictObject({
 export const NoticePatchSchema = NoticeInputSchema.partial();
 export const RegistrationPatchSchema = z.strictObject({ status: z.enum(["draft", "submitted", "approved", "rejected"]) });
 
+export const ChatSchema = z.strictObject({
+  lang: LangSchema,
+  messages: z
+    .array(z.strictObject({ role: z.enum(["user", "assistant"]), content: z.string().trim().min(1).max(800) }))
+    .min(1)
+    .max(12),
+});
+
 export type PlanLine = {
   demand?: number;
   item_id: string;
