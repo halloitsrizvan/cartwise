@@ -2,7 +2,7 @@ import { AppError } from "../lib/errors";
 import { requireEnv } from "../lib/env";
 import { planService } from "./plan.service";
 
-const MODEL = process.env.CHAT_MODEL ?? "llama-3.3-70b-versatile";
+const MODEL = process.env.CHAT_MODEL ?? "openai/gpt-oss-120b";
 const WEEKDAY = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const REASON: Record<string, string> = {
   WEEKDAY_HIGH: "this weekday usually sells more",
@@ -56,7 +56,8 @@ export const planVoiceService = {
         body: JSON.stringify({
           model: MODEL,
           temperature: 0.4,
-          max_tokens: 420,
+          max_tokens: 1200,
+          reasoning_effort: "low",
           messages: [
             { role: "system", content: `${SYSTEM}\nLanguage: ${lang === "ml" ? "Malayalam" : "English"}.` },
             { role: "user", content: `PLAN DATA (JSON):\n${JSON.stringify(data)}` },

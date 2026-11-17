@@ -7,7 +7,7 @@ import { vendorRepository } from "../repositories/vendor.repository";
 import { moneyService } from "./money.service";
 import { retrieve } from "./rag";
 
-const MODEL = process.env.CHAT_MODEL ?? "llama-3.3-70b-versatile";
+const MODEL = process.env.CHAT_MODEL ?? "openai/gpt-oss-120b";
 type Msg = { role: "user" | "assistant"; content: string };
 
 const SYSTEM = `You are CartWise Assistant, a friendly helper inside the CartWise web app for street vendors (fruit, vegetables, tea and snacks, juice).
@@ -83,7 +83,8 @@ export const chatService = {
         body: JSON.stringify({
           model: MODEL,
           temperature: 0.3,
-          max_tokens: 500,
+          max_tokens: 1200,
+          reasoning_effort: "low",
           messages: [{ role: "system", content: system }, ...args.messages.slice(-8)],
         }),
         signal: AbortSignal.timeout(25_000),

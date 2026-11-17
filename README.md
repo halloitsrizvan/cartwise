@@ -37,7 +37,7 @@ Demo logins (when `DEMO_MODE=true`): buttons on `/` and `/login`. Vendor `vendor
 | `APP_URL`, `NEXT_PUBLIC_APP_URL` | Base URL for share links and OG |
 | `DEMO_MODE` | `true` shows the demo login buttons |
 | `GROQ_API_KEY` | Voice transcription (Whisper) and the chat assistant. Optional: without it, tap entry still works and the assistant says it is unavailable |
-| `CHAT_MODEL` | Optional. Chat model, default `llama-3.3-70b-versatile` |
+| `CHAT_MODEL` | Optional. Chat model, default `openai/gpt-oss-120b` |
 
 ## Features
 
