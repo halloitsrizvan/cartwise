@@ -18,21 +18,21 @@ export const KB: KbChunk[] = [
     title: "Selling with a bill",
     en: "On the Sell page, tap a product, choose how much in the popup at the bottom, and tap Add to bill. Add as many products as you like. Then tap Collect to see the bill and choose Cash received or Pay by UPI. The sale is saved when you confirm payment. You can undo it for a few seconds afterwards.",
     ml: "വിൽപ്പന പേജിൽ ഒരു സാധനത്തിൽ തൊടൂ, താഴെ വരുന്ന പോപ്പ്അപ്പിൽ എത്രയെന്ന് തിരഞ്ഞെടുത്ത് ബില്ലിൽ ചേർക്കൂ എന്ന് അമർത്തൂ. എത്ര സാധനങ്ങൾ വേണമെങ്കിലും ചേർക്കാം. പിന്നെ പണം വാങ്ങൂ അമർത്തി ബിൽ കണ്ട് പണം കിട്ടി അല്ലെങ്കിൽ UPI വഴി അടയ്ക്കൂ തിരഞ്ഞെടുക്കൂ. പേയ്‌മെന്റ് ഉറപ്പിക്കുമ്പോൾ വിൽപ്പന സേവ് ആകും. കുറച്ച് സെക്കൻഡ് തിരിച്ചെടുക്കാം.",
-    tags: "sell tap product quantity bill collect cash undo",
+    tags: "sell tap product quantity bill collect cash undo ബിൽ വിൽപ്പന സാധനം തൊടൂ",
   },
   {
     id: "upi-qr",
     title: "UPI QR code for payments",
     en: "Add your UPI ID once in Settings under UPI for payments, or on the QR screen the first time. After that, Pay by UPI shows a QR code for the exact bill amount. The customer scans it with any UPI app. Money goes straight to your account; CartWise never touches it. Tap Payment received when the customer has paid.",
     ml: "ക്രമീകരണങ്ങളിൽ പണമടയ്ക്കാൻ UPI എന്നതിൽ, അല്ലെങ്കിൽ ആദ്യമായി QR സ്ക്രീനിൽ, നിങ്ങളുടെ UPI ഐഡി ഒരിക്കൽ ചേർക്കൂ. പിന്നെ UPI വഴി അടയ്ക്കൂ എന്നത് ബില്ലിന്റെ കൃത്യമായ തുകയ്ക്ക് QR കാണിക്കും. ഉപഭോക്താവ് ഏത് UPI ആപ്പിലും സ്കാൻ ചെയ്യും. പണം നേരിട്ട് നിങ്ങളുടെ അക്കൗണ്ടിൽ എത്തും; CartWise പണം തൊടുന്നില്ല. ഉപഭോക്താവ് അടച്ചാൽ പണം കിട്ടി അമർത്തൂ.",
-    tags: "upi qr payment scan gpay phonepe paytm",
+    tags: "upi qr payment scan gpay phonepe paytm യുപിഐ ക്യുആർ ക്യൂആർ പേയ്മെന്റ് സ്കാൻ UPI QR",
   },
   {
     id: "voice",
     title: "Voice assistant on Sell",
     en: "On the Sell page tap the microphone button, say what you sold, for example two kilo mango and three banana, then tap again to stop. The app listens, understands the products and quantities, and puts them on your bill automatically. A wrong match can be removed with the cross on its chip. Voice needs internet and microphone permission.",
     ml: "വിൽപ്പന പേജിൽ മൈക്ക് ബട്ടൺ അമർത്തി വിറ്റത് പറയൂ, ഉദാഹരണം രണ്ട് കിലോ മാങ്ങ, മൂന്ന് വാഴപ്പഴം, എന്നിട്ട് നിർത്താൻ വീണ്ടും അമർത്തൂ. ആപ്പ് കേട്ട് സാധനങ്ങളും അളവും മനസ്സിലാക്കി ബില്ലിൽ സ്വയം ചേർക്കും. തെറ്റിയത് ചിപ്പിലെ ക്രോസ് കൊണ്ട് ഒഴിവാക്കാം. വോയ്സിന് ഇന്റർനെറ്റും മൈക്ക് അനുമതിയും വേണം.",
-    tags: "voice speak microphone mic record say",
+    tags: "voice speak microphone mic record say വോയ്സ് ശബ്ദം മൈക്ക് റെക്കോർഡ് പറയൂ വോയ്സ് അസിസ്റ്റന്റ്",
   },
   {
     id: "close-day",
@@ -46,7 +46,7 @@ export const KB: KbChunk[] = [
     title: "Tomorrow's buy plan",
     en: "The Plan page gives a recommended quantity for each product for tomorrow, with a range, a confidence level and short reasons such as weekday, rain, festival or payday week. It uses your last 8 closed days, counts days you sold out as higher demand, and balances the cost of waste against the profit of one more sale. You can change any quantity with the plus and minus buttons. Press Read aloud to hear the list. Turn on Rain, Festival or Payday for tomorrow to update it.",
     ml: "പ്ലാൻ പേജ് നാളത്തേക്ക് ഓരോ സാധനത്തിനും ശുപാർശ ചെയ്യുന്ന അളവ്, പരിധി, ഉറപ്പിന്റെ നില, ആഴ്ചയിലെ ദിവസം, മഴ, ഉത്സവം, ശമ്പള ആഴ്ച തുടങ്ങിയ ചെറിയ കാരണങ്ങൾ എന്നിവ നൽകും. അവസാന 8 അടച്ച ദിവസങ്ങൾ ഉപയോഗിക്കുന്നു, സാധനം തീർന്ന ദിവസങ്ങൾ കൂടുതൽ ആവശ്യമായി കണക്കാക്കും, പാഴാകുന്നതിന്റെ ചെലവും ഒരു വിൽപ്പന കൂടി കിട്ടുന്നതിന്റെ ലാഭവും തൂക്കിനോക്കും. കൂട്ടാനും കുറയ്ക്കാനും + − ബട്ടണുകൾ ഉപയോഗിക്കാം. പട്ടിക കേൾക്കാൻ വായിച്ചു കേൾക്കൂ അമർത്തൂ. നാളത്തേക്ക് മഴ, ഉത്സവം, ശമ്പളം ഓൺ ചെയ്താൽ പ്ലാൻ മാറും.",
-    tags: "plan buy tomorrow recommend quantity forecast how much reasons confidence",
+    tags: "plan buy tomorrow recommend quantity forecast how much reasons confidence പ്ലാൻ നാളെ വാങ്ങൽ അളവ്",
   },
   {
     id: "plan-new",
@@ -60,7 +60,7 @@ export const KB: KbChunk[] = [
     title: "Money page: profit, waste and before-after",
     en: "The Money page shows profit for 7 or 30 days with a daily chart, money wasted on leftovers, and sales lost because you ran out (an estimate). The Before and After card compares days you followed the plan with days you did not: average waste, profit per day and how often you ran out. Demo accounts show a tag because their numbers are seeded sample data.",
     ml: "പണം പേജ് 7 അല്ലെങ്കിൽ 30 ദിവസത്തെ ലാഭം ദിവസേനയുള്ള ചാർട്ടോടെ കാണിക്കും, ബാക്കിവന്ന് പാഴായ പണവും, സ്റ്റോക്ക് തീർന്നതിനാൽ നഷ്ടമായ വിൽപ്പനയും (ഏകദേശ കണക്ക്). മുമ്പും ശേഷവും കാർഡ് പ്ലാൻ പിന്തുടർന്ന ദിവസങ്ങളും അല്ലാത്തവയും താരതമ്യം ചെയ്യും: ശരാശരി പാഴാകൽ, ദിവസ ലാഭം, സാധനം തീർന്ന തവണകൾ. ഡെമോ അക്കൗണ്ടുകളിലെ കണക്കുകൾ മാതൃകാ ഡാറ്റയായതിനാൽ ടാഗ് കാണിക്കും.",
-    tags: "money profit waste lost before after chart",
+    tags: "money profit waste lost before after chart ലാഭം പാഴാകൽ പണം",
   },
   {
     id: "payments",
@@ -81,7 +81,7 @@ export const KB: KbChunk[] = [
     title: "Income proof (statement)",
     en: "The Income proof page makes a clean statement from your own daily records: average daily profit over the last 30 days, active days, and a consistency label (Steady, Growing or Variable). Tap Share to create a private link. The link is shown once, expires in 30 days, can be sent on WhatsApp, and can be revoked at any time. The public page shows only your first name and averages, never your phone number or exact area.",
     ml: "വരുമാന തെളിവ് പേജ് നിങ്ങളുടെ സ്വന്തം ദിവസ രേഖകളിൽ നിന്ന് വൃത്തിയുള്ള സ്റ്റേറ്റ്‌മെന്റ് ഉണ്ടാക്കും: കഴിഞ്ഞ 30 ദിവസത്തെ ശരാശരി ദിവസ ലാഭം, പ്രവർത്തിച്ച ദിവസങ്ങൾ, സ്ഥിരത (സ്ഥിരം, വളരുന്നു, മാറിക്കൊണ്ടിരിക്കുന്നു). പങ്കിടൂ അമർത്തി സ്വകാര്യ ലിങ്ക് ഉണ്ടാക്കാം. ലിങ്ക് ഒരിക്കൽ മാത്രം കാണിക്കും, 30 ദിവസത്തിൽ കാലഹരണപ്പെടും, വാട്സാപ്പിൽ അയയ്ക്കാം, എപ്പോൾ വേണമെങ്കിലും റദ്ദാക്കാം. പൊതു പേജിൽ ആദ്യ പേരും ശരാശരികളും മാത്രം, ഫോൺ നമ്പറോ കൃത്യമായ സ്ഥലമോ ഇല്ല.",
-    tags: "income proof statement passport share link whatsapp revoke privacy",
+    tags: "income proof statement passport share link whatsapp revoke privacy വരുമാന തെളിവ് പങ്കിടൂ ലിങ്ക്",
   },
   {
     id: "loan-checklist",
