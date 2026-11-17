@@ -16,7 +16,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: { default: `${APP_NAME} | Plan the day. Prove the income.`, template: `%s | ${APP_NAME}` },
-  description: "Daily buy-list, profit tracking and a shareable proof of income for street vendors in Kerala.",
+  description: "Daily buy-list, profit tracking and a shareable proof of income for street vendors.",
   applicationName: APP_NAME,
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: "default" },

@@ -36,7 +36,7 @@ export function PaySheet({ open, onClose, lines, total, onChangeQty, onPaid, onU
   lines: Line[];
   total: number;
   onChangeQty: (id: string, qty: number) => void;
-  onPaid: () => void | Promise<void>;
+  onPaid: (method: "cash" | "upi") => void | Promise<void>;
   onUpiSaved: () => void;
 }) {
   const t = useT();
@@ -50,9 +50,9 @@ export function PaySheet({ open, onClose, lines, total, onChangeQty, onPaid, onU
   }, [open]);
 
   const upi = vendor.data?.upi_id ?? "";
-  const pay = async () => {
+  const pay = async (method: "cash" | "upi") => {
     setBusy(true);
-    await onPaid();
+    await onPaid(method);
     setBusy(false);
   };
   const saveUpi = async () => {
@@ -78,13 +78,13 @@ export function PaySheet({ open, onClose, lines, total, onChangeQty, onPaid, onU
             <Button size="lg" variant="primary" onClick={() => setStep("qr")} disabled={!lines.length} data-testid="pay-upi">
               <QrCode className="size-6" aria-hidden /> {t("sell.upi")} · {rupee(total)}
             </Button>
-            <Button size="lg" variant="outline" onClick={pay} loading={busy} disabled={!lines.length} data-testid="pay-cash">
+            <Button size="lg" variant="outline" onClick={() => pay("cash")} loading={busy} disabled={!lines.length} data-testid="pay-cash">
               <Banknote className="size-6" aria-hidden /> {t("sell.cash")}
             </Button>
           </div>
         ) : (
           <div className="grid gap-3">
-            <Button size="lg" onClick={pay} loading={busy} data-testid="pay-received">{t("sell.paid")}</Button>
+            <Button size="lg" onClick={() => pay("upi")} loading={busy} data-testid="pay-received">{t("sell.paid")}</Button>
             <Button variant="ghost" onClick={() => setStep("bill")}><ArrowLeft className="size-5" aria-hidden /> {t("common.back")}</Button>
           </div>
         )

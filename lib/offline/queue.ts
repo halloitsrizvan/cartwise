@@ -99,7 +99,7 @@ export async function flush(): Promise<void> {
           }
           await api("/api/v1/day/sales", {
             method: "POST",
-            body: { events: batch.map((o) => ({ client_id: o.clientId, item_id: o.itemId, qty: o.qty, ts: o.ts })) },
+            body: { events: batch.map((o) => ({ client_id: o.clientId, item_id: o.itemId, qty: o.qty, ts: o.ts, ...(o.billId ? { bill_id: o.billId } : {}), ...(o.payMethod ? { pay_method: o.payMethod } : {}) })) },
           });
           for (const o of batch) {
             appliedHandlers.forEach((f) => f(o));

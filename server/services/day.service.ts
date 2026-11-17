@@ -84,17 +84,61 @@ export const dayService = {
   },
 
   /** Idempotent on client_id (skipDuplicates). Items must belong to the session vendor. */
-  async addSales(vendorId: string, events: { client_id: string; item_id: string; qty: number; ts: string }[]) {
-    const owned = await prisma.item.findMany({ where: { vendorId, id: { in: [...new Set(events.map((e) => e.item_id))] } }, select: { id: true } });
+  async addSales(vendorId: string, events: { client_id: string; item_id: string; qty: number; ts: string; bill_id?: string; pay_method?: "cash" | "upi" }[]) {
+    const owned = await prisma.item.findMany({ where: { vendorId, id: { in: [...new Set(events.map((e) => e.item_id))] } }, select: { id: true, sellPrice: true } });
     const ok = new Set(owned.map((o) => o.id));
+    const price = new Map(owned.map((o) => [o.id, o.sellPrice]));
     if (events.some((e) => !ok.has(e.item_id))) throw AppError.notFound("Item not found");
     const day = await dayRepository.ensureDay(vendorId, todayIST());
     if (day.status === "closed") throw AppError.conflict("Day already closed");
     const inserted = await dayRepository.insertSales(
       day.id,
-      events.map((e) => ({ clientId: e.client_id, itemId: e.item_id, qty: e.qty, ts: new Date(e.ts) })),
+      events.map((e) => ({ clientId: e.client_id, itemId: e.item_id, qty: e.qty, ts: new Date(e.ts), billId: e.bill_id, payMethod: e.pay_method, unitPrice: price.get(e.item_id) })),
     );
     return { received: events.length, inserted, duplicates: events.length - inserted };
+  },
+
+  /** Payment records: sales grouped into bills (one per customer payment), newest first. */
+  async payments(vendorId: string, rangeDays: number) {
+    const from = addDays(todayIST(), -(rangeDays - 1));
+    const rows = await prisma.saleEvent.findMany({
+      where: { voided: false, dayLog: { vendorId, date: { gte: toDbDate(from) } } },
+      include: { item: true, dayLog: { select: { date: true } } },
+      orderBy: { ts: "desc" },
+      take: 5000,
+    });
+    type Line = { item_id: string; name_ml: string; name_en: string; emoji: string; unit: string; qty: number; price: number; amount: number };
+    type Bill = { id: string; date: string; ts: string; method: "cash" | "upi" | null; legacy: boolean; total: number; lines: Line[] };
+    const bills = new Map<string, Bill>();
+    for (const r of rows) {
+      const date = fromDbDate(r.dayLog.date);
+      // sales logged before bills existed are shown as one "earlier sales" record per day
+      const key = r.billId ?? `legacy:${date}`;
+      const price = r.unitPrice ?? r.item.sellPrice;
+      const line: Line = { item_id: r.itemId, name_ml: r.item.nameMl, name_en: r.item.nameEn, emoji: r.item.emoji, unit: r.item.unit, qty: r.qty, price, amount: Math.round(r.qty * price * 100) / 100 };
+      const b = bills.get(key) ?? { id: key, date, ts: r.ts.toISOString(), method: (r.payMethod as "cash" | "upi" | null) ?? null, legacy: !r.billId, total: 0, lines: [] };
+      const existing = b.lines.find((l) => l.item_id === line.item_id && l.price === line.price);
+      if (existing) {
+        existing.qty = Math.round((existing.qty + line.qty) * 1000) / 1000;
+        existing.amount = Math.round((existing.amount + line.amount) * 100) / 100;
+      } else b.lines.push(line);
+      b.total = Math.round((b.total + line.amount) * 100) / 100;
+      bills.set(key, b);
+    }
+    const list = [...bills.values()].sort((a, b) => b.ts.localeCompare(a.ts));
+    const days = new Map<string, { date: string; total: number; bills: Bill[] }>();
+    for (const b of list) {
+      const d = days.get(b.date) ?? { date: b.date, total: 0, bills: [] };
+      d.total = Math.round((d.total + b.total) * 100) / 100;
+      d.bills.push(b);
+      days.set(b.date, d);
+    }
+    const sum = (m: "cash" | "upi" | null) => Math.round(list.filter((b) => b.method === m).reduce((s, b) => s + b.total, 0));
+    return {
+      range: rangeDays,
+      totals: { total: Math.round(list.reduce((s, b) => s + b.total, 0)), cash: sum("cash"), upi: sum("upi"), other: sum(null), bills: list.filter((b) => !b.legacy).length },
+      days: [...days.values()].sort((a, b) => b.date.localeCompare(a.date)),
+    };
   },
 
   async voidSale(vendorId: string, ref: string) {

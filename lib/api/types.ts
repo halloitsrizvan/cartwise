@@ -76,3 +76,10 @@ export type PublicVendor = {
   score: number; badges: string[]; days_active: number; rank: number;
 };
 export type PublicVendorProfile = PublicVendor & { phone: string | null; consistency: string; items: { name_ml: string; name_en: string; emoji: string }[] };
+export type PaymentLine = { item_id: string; name_ml: string; name_en: string; emoji: string; unit: string; qty: number; price: number; amount: number };
+export type PaymentBill = { id: string; date: string; ts: string; method: "cash" | "upi" | null; legacy: boolean; total: number; lines: PaymentLine[] };
+export type Payments = {
+  range: number;
+  totals: { total: number; cash: number; upi: number; other: number; bills: number };
+  days: { date: string; total: number; bills: PaymentBill[] }[];
+};

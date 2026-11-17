@@ -29,6 +29,7 @@ export const useItems = (all = false) => q<ItemDTO[]>(["items", all], `/api/v1/i
 export const useToday = () => q<T.Today>(["today"], "/api/v1/day/today", { cached: true });
 export const usePlan = () => q<T.PlanView>(["plan"], "/api/v1/plan/tomorrow", { cached: true });
 export const useMoney = (range: 7 | 30) => q<T.MoneySummary>(["money", range], `/api/v1/money/summary?range=${range}`, { cached: true });
+export const usePayments = (range: 7 | 30 | 90) => q<T.Payments>(["payments", range], `/api/v1/day/payments?range=${range}`, { cached: true });
 export const useBeforeAfter = () => q<T.BeforeAfter>(["before-after"], "/api/v1/money/before-after", { cached: true });
 export const useStatement = () => q<T.Statement>(["statement"], "/api/v1/passport");
 export const useReadiness = () => q<T.Readiness>(["readiness"], "/api/v1/passport/readiness");

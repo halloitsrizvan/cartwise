@@ -11,6 +11,7 @@ import { getSR, VoiceSheet } from "@/components/sell/voice-sheet";
 import type { TodayItem } from "@/lib/api/types";
 import { fmtQty, haptic, rupee } from "@/lib/format";
 import { useI18n } from "@/lib/i18n";
+import { newClientId } from "@/lib/offline/queue";
 import { recordSale, undoSale, useLiveToday } from "@/lib/sales";
 import { cn } from "@/lib/utils";
 
@@ -79,9 +80,10 @@ export function SellScreen() {
   };
 
   /** Customer paid: record every line as a sale (offline-safe queue), then clear the bill. */
-  const complete = async () => {
+  const complete = async (method: "cash" | "upi") => {
     const done: { clientId: string; itemId: string; qty: number }[] = [];
-    for (const l of lines) done.push({ clientId: await recordSale(l.item.id, l.qty), itemId: l.item.id, qty: l.qty });
+    const billId = newClientId();
+    for (const l of lines) done.push({ clientId: await recordSale(l.item.id, l.qty, { billId, payMethod: method }), itemId: l.item.id, qty: l.qty });
     const amount = total;
     setBill({});
     setPayOpen(false);

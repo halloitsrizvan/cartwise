@@ -29,9 +29,9 @@ export const dayRepository = {
     return Object.fromEntries(rows.map((r) => [r.itemId, r._sum.qty ?? 0]));
   },
 
-  async insertSales(dayLogId: string, events: { clientId: string; itemId: string; qty: number; ts: Date }[]) {
+  async insertSales(dayLogId: string, events: { clientId: string; itemId: string; qty: number; ts: Date; billId?: string; payMethod?: string; unitPrice?: number }[]) {
     const res = await prisma.saleEvent.createMany({
-      data: events.map((e) => ({ dayLogId, itemId: e.itemId, qty: e.qty, ts: e.ts, clientId: e.clientId })),
+      data: events.map((e) => ({ dayLogId, itemId: e.itemId, qty: e.qty, ts: e.ts, clientId: e.clientId, billId: e.billId, payMethod: e.payMethod, unitPrice: e.unitPrice })),
       skipDuplicates: true,
     });
     return res.count;

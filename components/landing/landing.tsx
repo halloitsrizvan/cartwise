@@ -7,6 +7,7 @@ import { useState } from "react";
 import { DemoRow } from "@/components/auth/auth-forms";
 import { Logo } from "@/components/cw/logo";
 import { AccountButton, LangToggle } from "@/components/cw/shell";
+import { useMe } from "@/lib/api/hooks";
 import { ButtonLink } from "@/components/cw/ui";
 import { BestVendors } from "@/components/public/vendors";
 import { APP_NAME } from "@/config/brand";
@@ -35,8 +36,23 @@ function EmailCta({ id }: { id: string }) {
   );
 }
 
+function DashboardCta({ href }: { href: string }) {
+  const t = useT();
+  return (
+    <div className="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
+      <ButtonLink href={href} size="lg" variant="primary" className="!rounded-2xl" data-testid="dashboard-cta">
+        {t("landing.dashboard")} <ArrowRight className="size-5" aria-hidden />
+      </ButtonLink>
+      <ButtonLink href="/vendors" size="lg" variant="outline" className="!rounded-2xl">{t("landing.find_cta")}</ButtonLink>
+    </div>
+  );
+}
+
 export function Landing() {
   const t = useT();
+  const me = useMe();
+  const user = me.data;
+  const dash = user ? (user.role === "admin" ? "/admin" : user.onboarded ? "/app" : "/onboarding") : null;
   const cfg = useQuery({ queryKey: ["auth-config"], queryFn: () => api<{ demo_mode: boolean }>("/api/v1/auth/config"), staleTime: 300_000, retry: false });
 
   return (
@@ -49,6 +65,7 @@ export function Landing() {
             <a href="#features" className="hover:text-primary">{t("landing.nav_features")}</a>
             <a href="#how" className="hover:text-primary">{t("landing.how_title")}</a>
             <a href="#vendors" className="hover:text-primary">{t("landing.best_title")}</a>
+            {dash && <Link href={dash} className="text-primary hover:underline">{t("landing.dashboard_short")}</Link>}
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <LangToggle />
@@ -72,7 +89,7 @@ export function Landing() {
                 </span>
               </h1>
               <p className="max-w-xl text-lg text-muted sm:text-xl">{t("landing.sub")}</p>
-              <EmailCta id="hero-email" />
+              {dash ? <DashboardCta href={dash} /> : <EmailCta id="hero-email" />}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-base font-semibold text-muted">
                 {["landing.pt1", "landing.pt2", "landing.pt3"].map((k) => (
                   <span key={k} className="inline-flex items-center gap-1.5"><Check className="size-5 text-primary" aria-hidden /> {t(k)}</span>
@@ -140,14 +157,13 @@ export function Landing() {
 
         {/* ---------- Highlight banner ---------- */}
         <section className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="relative overflow-hidden rounded-[28px] bg-deep p-6 pt-10 text-on-deep sm:rounded-[36px] sm:p-8 md:p-12">
-            <span className="absolute left-8 top-0 -translate-y-1/2 rounded-xl bg-accent px-4 py-2 text-sm font-extrabold text-on-accent">{t("landing.banner_tag")}</span>
+          <div className="relative overflow-hidden rounded-[28px] bg-deep p-6 text-on-deep sm:rounded-[36px] sm:p-8 md:p-12">
             <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-4">
                 <FileCheck2 className="size-10 text-accent" aria-hidden />
                 <h2 className="text-3xl sm:text-4xl md:text-5xl">{t("landing.banner_title")}</h2>
                 <p className="max-w-xl text-lg opacity-85 sm:text-xl">{t("landing.banner_body")}</p>
-                <ButtonLink href="/register" size="md" variant="accent">{t("landing.banner_cta")}</ButtonLink>
+                <ButtonLink href={user?.role === "vendor" && user.onboarded ? "/app/passport" : dash ?? "/register"} size="md" variant="accent">{dash ? t("landing.banner_cta_user") : t("landing.banner_cta")}</ButtonLink>
               </div>
               <ul className="space-y-3 rounded-[28px] bg-primary p-6 text-on-primary">
                 {["landing.bn1", "landing.bn2", "landing.bn3"].map((k) => (
@@ -188,9 +204,9 @@ export function Landing() {
           <div className="relative overflow-hidden rounded-[28px] bg-primary-soft p-6 sm:rounded-[36px] sm:p-8 md:p-12">
             <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-6">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl">{t("landing.cta_title", { app: APP_NAME })}</h2>
-                <EmailCta id="cta-email" />
-                <p className="text-muted">{t("landing.cta_note")}</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl">{dash ? t("landing.cta_back") : t("landing.cta_title", { app: APP_NAME })}</h2>
+                {dash ? <DashboardCta href={dash} /> : <EmailCta id="cta-email" />}
+                {!dash && <p className="text-muted">{t("landing.cta_note")}</p>}
               </div>
               <div className="relative hidden h-72 overflow-hidden lg:block"><PhoneMock className="absolute left-1/2 top-4 -translate-x-1/2 rotate-3" /></div>
             </div>
@@ -216,15 +232,21 @@ export function Landing() {
           <nav aria-label={t("landing.fcol2")}>
             <h3 className="mb-3 text-lg">{t("landing.fcol2")}</h3>
             <ul className="space-y-2">
-              <li><Link className="hover:text-primary" href="/register">{t("auth.register")}</Link></li>
-              <li><Link className="hover:text-primary" href="/login">{t("auth.login")}</Link></li>
+              {dash ? (
+                <li><Link className="hover:text-primary" href={dash}>{t("landing.dashboard_short")}</Link></li>
+              ) : (
+                <>
+                  <li><Link className="hover:text-primary" href="/register">{t("auth.register")}</Link></li>
+                  <li><Link className="hover:text-primary" href="/login">{t("auth.login")}</Link></li>
+                </>
+              )}
             </ul>
           </nav>
           <nav aria-label={t("landing.fcol3")}>
             <h3 className="mb-3 text-lg">{t("landing.fcol3")}</h3>
             <ul className="space-y-2">
               <li><Link className="hover:text-primary" href="/vendors">{t("landing.find_cta")}</Link></li>
-              <li><Link className="hover:text-primary" href="/login">{t("landing.admin_link")}</Link></li>
+              {!dash && <li><Link className="hover:text-primary" href="/login">{t("landing.admin_link")}</Link></li>}
             </ul>
           </nav>
         </div>

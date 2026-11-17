@@ -17,7 +17,7 @@ export default async function Image() {
         <div style={{ display: "flex", flexDirection: "column", color: "#032724", maxWidth: 520 }}>
           <div style={{ fontSize: 60, fontWeight: 800, lineHeight: 1.1 }}>Plan the day.</div>
           <div style={{ fontSize: 60, fontWeight: 800, lineHeight: 1.1, color: "#3a8f1e" }}>Prove the income.</div>
-          <div style={{ fontSize: 28, marginTop: 24, color: "#566066" }}>A daily buy-list and proof of income for street vendors in Kerala.</div>
+          <div style={{ fontSize: 28, marginTop: 24, color: "#566066" }}>A daily buy-list and proof of income for street vendors.</div>
         </div>
       </div>
     ),

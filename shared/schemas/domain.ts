@@ -98,6 +98,8 @@ export const SaleEventSchema = z.strictObject({
   item_id: z.uuid(),
   qty: z.number().positive().max(1000),
   ts: z.iso.datetime({ offset: true }),
+  bill_id: z.string().min(8).max(64).optional(),
+  pay_method: z.enum(["cash", "upi"]).optional(),
 });
 export const SalesBatchSchema = z.strictObject({ events: z.array(SaleEventSchema).min(1).max(200) });
 export const CloseDaySchema = z.strictObject({
@@ -122,6 +124,7 @@ export type CloseDayInput = z.infer<typeof CloseDaySchema>;
 export const CloseDayBodySchema = z.union([CloseDaySchema, z.strictObject({})]);
 export const OverrideSchema = z.strictObject({ item_id: z.uuid(), chosen_qty: z.number().min(0).max(100000) });
 export const RangeQuery = z.object({ range: z.enum(["7", "30"]).default("7") });
+export const PaymentsQuery = z.object({ range: z.enum(["7", "30", "90"]).default("30") });
 
 // ---- passport ----
 export const SelfDeclaredSchema = z.strictObject({

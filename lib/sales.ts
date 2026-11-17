@@ -23,9 +23,9 @@ export function useLiveToday() {
 
 export type SaleAction = { clientId: string; itemId: string; name: string; qty: number };
 
-export async function recordSale(itemId: string, qty: number): Promise<string> {
+export async function recordSale(itemId: string, qty: number, bill?: { billId: string; payMethod: "cash" | "upi" }): Promise<string> {
   const clientId = newClientId();
-  await enqueue({ kind: "sale", clientId, itemId, qty, ts: new Date().toISOString() });
+  await enqueue({ kind: "sale", clientId, itemId, qty, ts: new Date().toISOString(), ...(bill ?? {}) });
   return clientId;
 }
 

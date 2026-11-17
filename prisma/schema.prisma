@@ -146,6 +146,9 @@ model SaleEvent {
   ts        DateTime
   clientId  String   @unique @map("client_id")
   voided    Boolean  @default(false)
+  billId    String?  @map("bill_id")
+  payMethod String?  @map("pay_method")
+  unitPrice Float?   @map("unit_price")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -154,6 +157,7 @@ model SaleEvent {
 
   @@index([dayLogId])
   @@index([itemId])
+  @@index([billId])
   @@map("sale_events")
 }
 

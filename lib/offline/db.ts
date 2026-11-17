@@ -2,7 +2,7 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
 export type QueueOp =
-  | { id: string; kind: "sale"; clientId: string; itemId: string; qty: number; ts: string; createdAt: number }
+  | { id: string; kind: "sale"; clientId: string; itemId: string; qty: number; ts: string; billId?: string; payMethod?: "cash" | "upi"; createdAt: number }
   | { id: string; kind: "void"; clientId: string; itemId: string; qty: number; createdAt: number }
   | { id: string; kind: "close"; payload: unknown; createdAt: number };
 

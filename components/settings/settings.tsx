@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { InstallCard } from "@/components/cw/install-card";
 import { Button, Card, ErrorState, Field, Input, ListSkeleton, PageTitle, Toggle } from "@/components/cw/ui";
 import { ItemEmoji } from "@/components/cw/widgets";
 import { api } from "@/lib/api/client";
@@ -12,7 +13,7 @@ import { patch, post, useItems, useVendor } from "@/lib/api/hooks";
 import { useI18n } from "@/lib/i18n";
 import { useTheme, type SizePref, type ThemePref } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-import { BarChart3, Bell, Package, ChevronRight, Settings, ShieldCheck } from "lucide-react";
+import { BarChart3, Bell, Package, Receipt, ChevronRight, Settings, ShieldCheck } from "lucide-react";
 import type { ItemDTO } from "@/shared/schemas/domain";
 
 export function MoreScreen() {
@@ -21,12 +22,14 @@ export function MoreScreen() {
     { href: "/app/passport", label: t("more.passport"), icon: ShieldCheck },
     { href: "/app/notices", label: t("more.notices"), icon: Bell },
     { href: "/app/money", label: t("money.title"), icon: BarChart3 },
+    { href: "/app/payments", label: t("payments.title"), icon: Receipt },
     { href: "/app/products", label: t("products.title"), icon: Package },
     { href: "/app/settings", label: t("more.settings"), icon: Settings },
   ];
   return (
     <div className="space-y-4">
       <PageTitle>{t("more.title")}</PageTitle>
+      <InstallCard />
       <ul className="space-y-3">
         {links.map((l) => (
           <li key={l.href}>

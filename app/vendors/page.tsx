@@ -3,7 +3,7 @@ import { VendorsDirectory } from "@/components/public/vendors";
 
 export const metadata: Metadata = {
   title: "Find vendors",
-  description: "Trusted street vendors in Kerala, ranked by how well they keep records.",
+  description: "Trusted street vendors, ranked by how well they keep records.",
 };
 
 export default function Page() {
